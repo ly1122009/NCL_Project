@@ -1,0 +1,59 @@
+# ==========================================
+# Build Artifacts & CMake Directories
+# ==========================================
+# Bỏ qua toàn bộ thư mục build (bao gồm gcc-dev-Debug và các cấu hình build khác)
+build/
+build-*/
+bin/
+lib/
+out/
+
+# ==========================================
+# CMake Temporary & Generated Files
+# ==========================================
+# Nếu ai đó vô tình chạy 'cmake .' ở thư mục gốc thay vì trong build/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+CMakeCache.txt.prev
+CMakeConfigureLog.yaml
+compile_commands.json
+Makefile
+*.ninja
+.ninja_*
+
+# ==========================================
+# Object & Binary Output Files
+# ==========================================
+*.o
+*.obj
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.elf
+*.bin
+*.out
+
+# ==========================================
+# Language Server & IDE Caches (VS Code, Clangd, Clion)
+# ==========================================
+.clangd/
+.cache/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*~
+*.bak
+
+# ==========================================
+# OS / System Files
+# ==========================================
+.DS_Store
+Thumbs.db
