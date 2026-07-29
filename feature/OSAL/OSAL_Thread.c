@@ -131,9 +131,32 @@ void NCL_OSAL_ThreadExit(void* value_ptr)
     return;
 }
 
-NCL_ERRORTYPE NCL_OSAL_ThreadCancel(NCL_HANDLETYPE thread_handle)
+NCL_ERRORTYPE NCL_OSAL_ThreadCancel(NCL_HANDLETYPE* thread_handle)
 {
+    NCL_ERRORTYPE ret = 0;
+    int cancel_ret = 0;
+    NCL_THREAD_HANDLE_TYPE* thread = (NCL_THREAD_HANDLE_TYPE*) thread_handle;
 
+    if (!thread_handle)
+    {
+        ret = NCL_ErrorBadParameter;
+        goto EXIT;
+    }
+    cancel_ret = pthread_cancel(thread->pthread);
+    if (!cancel_ret)
+    {   
+        printf("ERROR: [NCL_OSAL_ThreadCancel] - pthread_cancel failed %d\n", cancel_ret);
+        ret = NCL_ErrorBadParameter;
+        goto EXIT;        
+    }
+
+    pthread_join(thread->pthread, NULL);
+    NCL_OSAL_Free(thread);
+    ret = NCL_ErrorNode;
+
+EXIT:
+    printf("ERROR: [NCL_OSAL_ThreadCancel] out - ret: %d", ret);
+    return ret;
 }
 
 NCL_ERRORTYPE NCL_OSAL_SleepMillisec(NCL_U32 ms);
