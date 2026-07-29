@@ -24,7 +24,9 @@ typedef enum _NCL_ERRORTYPE
     NCL_ErrorInvalidState,  // State machine violation
     NCL_ErrorTimeout,       // For semaphore and signals
     NCL_ErrorHardware,      // For Hardware doesnot support or not
-    NCL_ErrorNotReady       // For not ready component
+    NCL_ErrorNotReady,       // For not ready component
+    NCL_ErrorInsufficientResources, // For insufficient resources
+    NCL_ErrorUndefined      // For the error could not be determined
 } NCL_ERRORTYPE;
 
 

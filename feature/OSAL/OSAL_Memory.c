@@ -27,12 +27,12 @@ NCL_PTR NCL_OSAL_Memset(NCL_PTR dest, NCL_S32 src, NCL_S32 size)
     return memset(dest, src, size);
 }
 
-NCL_PTR NCL_OSAL_Memcpy(NCL_PTR dest, NCL_S32 src, NCL_S32 size)
+NCL_PTR NCL_OSAL_Memcpy(NCL_PTR dest, NCL_PTR src, NCL_S32 size)
 {
     return memcpy(dest, src, size);
 }
 
-NCL_PTR NCL_OSAL_Memmove(NCL_PTR dest, NCL_S32 src, NCL_S32 size)
+NCL_PTR NCL_OSAL_Memmove(NCL_PTR dest, NCL_PTR src, NCL_S32 size)
 {
     return memmove(dest, src, size);
 }

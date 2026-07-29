@@ -1,7 +1,6 @@
 #ifndef __OSAL_TYPES_H__
 #define __OSAL_TYPES_H__
 
-#include <cstdint>
 #ifdef __cplusplus // avoid overloading
 extern "C" {
 #endif    
@@ -88,7 +87,7 @@ typedef void* NCL_PTR;
 /**
  * @brief NCL_STRING is used to pass 'C' type strings between thé application
  * and the component and more.
- */f
+ */
 typedef char* NCL_STRING;
 
 /**

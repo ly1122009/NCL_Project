@@ -1,8 +1,8 @@
 #ifndef __OSAL_THREAD_H__
 #define __OSAL_THREAD_H__
 
-#include "include/NCL_Core.h"
-#include "include/NCL_Types.h"
+#include "NCL_Core.h"
+#include "NCL_Types.h"
 
 typedef enum {
     NCL_THREAD_JOINABLE,
@@ -15,9 +15,9 @@ extern "C" {
 
 NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle, NCL_PTR func_name, NCL_PTR param, NCL_THREAD_TYPE thread_type);
 NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE *thread_handle);
-NCL_ERRORTYPE NCL_OSAL_ThreadExit(NCL_HANDLETYPE thread_handle);
-NCL_ERRORTYPE NCL_OSAL_ThreadCancel(void* value_ptr);
-NCL_ERRORTYPE NCL_OSAL_SleepMillisec(OMX_U32 ms);
+void NCL_OSAL_ThreadExit(void* value_ptr);
+NCL_ERRORTYPE NCL_OSAL_ThreadCancel(NCL_HANDLETYPE thread_handle);
+NCL_ERRORTYPE NCL_OSAL_SleepMillisec(NCL_U32 ms);
 
 #ifdef __cplusplus
 }
