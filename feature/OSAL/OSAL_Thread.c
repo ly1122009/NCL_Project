@@ -1,13 +1,14 @@
-#include "OSAL_Thread.h"
-#include "NCL_Core.h"
-#include "NCL_Types.h"
-#include "OSAL_Memory.h"
-#include <asm-generic/errno-base.h>
-#include <sched.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <semaphore.h>
+
+#include "OSAL_Thread.h"
+#include "NCL_Core.h"
+#include "NCL_Types.h"
+#include "OSAL_Memory.h"
 
 typedef struct _NCL_THREAD_HANDLE_TYPE
 {
@@ -21,7 +22,7 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle, NCL_PTR func_
 {
     int thread_ret = 0;
     int detach_ret = 0;
-    NCL_ERRORTYPE ret = NCL_ErrorNode;
+    NCL_ERRORTYPE ret = NCL_ErrorNone;
     NCL_THREAD_HANDLE_TYPE *thread = NULL;
     int detachState = PTHREAD_CREATE_DETACHED;
     if (!thread_handle)
@@ -71,12 +72,13 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle, NCL_PTR func_
         goto EXIT;
     }
 
-    thread_ret = pthread_create(&thread->pthread, &thread->attr, func_name, (void*)param);
+    // Convert NCL_PTR -> Function pointer
+    thread_ret = pthread_create(&thread->pthread, &thread->attr, (void *(*)(void *))func_name, (void*)param);
     switch (thread_ret) {
         case 0:
             *thread_handle = (NCL_HANDLETYPE)thread;
             printf("[NCL_OSAL_ThreadCreate] - thread id %lu is created\n", thread->pthread);
-            ret = NCL_ErrorNode;
+            ret = NCL_ErrorNone;
             break;
         case EAGAIN:
             *thread_handle = NULL;
@@ -99,7 +101,7 @@ EXIT:
 
 NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE *thread_handle)
 {
-    NCL_ERRORTYPE ret = NCL_ErrorNode;
+    NCL_ERRORTYPE ret = NCL_ErrorNone;
     int join_ret = 0;
     NCL_THREAD_HANDLE_TYPE *thread = (NCL_THREAD_HANDLE_TYPE*)thread_handle;
     if (!thread_handle)
@@ -117,7 +119,7 @@ NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE *thread_handle)
 
     NCL_OSAL_Free(&thread->pthread);
     printf("[NCL_OSAL_ThreadTerminate] thread id %lu join successfully %d\n", thread->pthread ,join_ret);
-    ret = NCL_ErrorNode;
+    ret = NCL_ErrorNone;
 
 
 EXIT:
@@ -131,32 +133,8 @@ void NCL_OSAL_ThreadExit(void* value_ptr)
     return;
 }
 
-NCL_ERRORTYPE NCL_OSAL_ThreadCancel(NCL_HANDLETYPE* thread_handle)
+void NCL_OSAL_SleepMillisec(NCL_U32 ms)
 {
-    NCL_ERRORTYPE ret = 0;
-    int cancel_ret = 0;
-    NCL_THREAD_HANDLE_TYPE* thread = (NCL_THREAD_HANDLE_TYPE*) thread_handle;
-
-    if (!thread_handle)
-    {
-        ret = NCL_ErrorBadParameter;
-        goto EXIT;
-    }
-    cancel_ret = pthread_cancel(thread->pthread);
-    if (!cancel_ret)
-    {   
-        printf("ERROR: [NCL_OSAL_ThreadCancel] - pthread_cancel failed %d\n", cancel_ret);
-        ret = NCL_ErrorBadParameter;
-        goto EXIT;        
-    }
-
-    pthread_join(thread->pthread, NULL);
-    NCL_OSAL_Free(thread);
-    ret = NCL_ErrorNode;
-
-EXIT:
-    printf("ERROR: [NCL_OSAL_ThreadCancel] out - ret: %d", ret);
-    return ret;
+    usleep(ms);
+    return;
 }
-
-NCL_ERRORTYPE NCL_OSAL_SleepMillisec(NCL_U32 ms);

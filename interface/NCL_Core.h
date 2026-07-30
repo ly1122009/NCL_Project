@@ -18,7 +18,7 @@ typedef enum _NCL_STATETYPE
 
 typedef enum _NCL_ERRORTYPE
 {
-    NCL_ErrorNode = 0,
+    NCL_ErrorNone = 0,
     NCL_ErrorBadParameter,  // Invalid input
     NCL_NotImplemented,     // Feature isn't implemented
     NCL_ErrorInvalidState,  // State machine violation
