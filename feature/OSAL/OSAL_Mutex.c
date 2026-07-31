@@ -64,10 +64,57 @@ NCL_ERRORTYPE NCL_OSAL_MutexTerminate(NCL_HANDLETYPE mutexHandle)
     }
 
 EXIT:
-    printf("ERROR: [NCL_OSAL_MutexCreate] - %d\n", ret);
+    printf("ERROR: [NCL_OSAL_MutexTerminate] - %d\n", ret);
     return ret;
 }
 
-NCL_ERRORTYPE NCL_OSAL_MutexLock(NCL_HANDLETYPE mutexHandle);
-NCL_ERRORTYPE NCL_OSAL_MutexUnlock(NCL_HANDLETYPE mutexHandle);
+NCL_ERRORTYPE NCL_OSAL_MutexLock(NCL_HANDLETYPE mutexHandle)
+{
+    NCL_ERRORTYPE ret = NCL_ErrorNone;
+    int lock_ret = 0;
+    
+    if (!mutexHandle)
+    {
+        ret = NCL_ErrorBadParameter;
+        goto EXIT;
+    }
+    
+    pthread_mutex_t* mutex = (pthread_mutex_t*)mutexHandle;
+    lock_ret = pthread_mutex_lock(mutex);
+    if (lock_ret != 0)
+    {
+        ret = NCL_ErrorUndefined;
+        goto EXIT;
+    }
+
+    return ret;
+EXIT:
+    printf("ERROR: [NCL_OSAL_MutexLock] - %d\n", ret);
+    return ret;
+}
+
+NCL_ERRORTYPE NCL_OSAL_MutexUnlock(NCL_HANDLETYPE mutexHandle)
+{
+    NCL_ERRORTYPE ret = NCL_ErrorNone;
+    int unlock_ret = 0;
+    
+    if (!mutexHandle)
+    {
+        ret = NCL_ErrorBadParameter;
+        goto EXIT;
+    }
+    
+    pthread_mutex_t* mutex = (pthread_mutex_t*)mutexHandle;
+    unlock_ret = pthread_mutex_unlock(mutex);
+    if (unlock_ret != 0)
+    {
+        ret = NCL_ErrorUndefined;
+        goto EXIT;
+    }
+
+    return ret;
+EXIT:
+    printf("ERROR: [NCL_OSAL_MutexUnlock] - %d\n", ret);
+    return ret;    
+}
 
