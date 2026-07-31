@@ -12,7 +12,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexCreate(NCL_HANDLETYPE* mutexHandle)
     int init_ret = 0;
     NCL_ERRORTYPE ret = NCL_ErrorNone;
     
-    if (!mutexHandle)
+    if (mutexHandle != NULL)
     {
         ret = NCL_ErrorBadParameter;
         goto EXIT;
@@ -30,7 +30,6 @@ NCL_ERRORTYPE NCL_OSAL_MutexCreate(NCL_HANDLETYPE* mutexHandle)
     init_ret = pthread_mutex_init(mutex, NULL);
     if (init_ret != 0)
     {
-        NCL_OSAL_Free(mutex);
         ret = NCL_ErrorUndefined;
         goto EXIT;
     }
@@ -41,6 +40,8 @@ NCL_ERRORTYPE NCL_OSAL_MutexCreate(NCL_HANDLETYPE* mutexHandle)
 
 EXIT:
     printf("ERROR: [NCL_OSAL_MutexCreate] - %d\n", ret);
+    NCL_OSAL_Free(mutex);
+    *mutexHandle = NULL;
     return ret;
 }
 
