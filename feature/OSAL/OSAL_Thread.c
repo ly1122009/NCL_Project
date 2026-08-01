@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <semaphore.h>
+#include <errno.h>
 
 #include "OSAL_Thread.h"
 #include "NCL_Core.h"
@@ -26,7 +27,7 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle, NCL_PTR func_
     NCL_ERRORTYPE ret = NCL_ErrorNone;
     NCL_THREAD_HANDLE_TYPE *thread = NULL;
     int detachState = PTHREAD_CREATE_DETACHED;
-    if (!thread_handle)
+    if (!thread_handle || !func_name)
     {
         ret = NCL_ErrorBadParameter;
         goto EXIT;
@@ -44,7 +45,7 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle, NCL_PTR func_
             goto EXIT;
     }
 
-    thread = NCL_OSAL_Malloc(sizeof(NCL_THREAD_HANDLE_TYPE));
+    thread = (NCL_THREAD_HANDLE_TYPE*)NCL_OSAL_Malloc(sizeof(NCL_THREAD_HANDLE_TYPE));
     if (thread == NULL)
     {
         ret = NCL_ErrorInsufficientResources;
@@ -52,58 +53,55 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle, NCL_PTR func_
     }
     NCL_OSAL_Memset(thread, 0, sizeof(NCL_THREAD_HANDLE_TYPE));
 
-    pthread_attr_init(&thread->attr);
-    // init_ret = pthread_attr_init(&thread->attr);
-    // if (init_ret != 0)
-    // {
-    //     printf("ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_init failed! %d\n", init_ret);
-    //     NCL_OSAL_Free(thread);
-    //     ret = NCL_ErrorUndefined;
-    //     goto EXIT;
-    // }
+    // pthread_attr_init(&thread->attr);
+    init_ret = pthread_attr_init(&thread->attr);
+    if (init_ret != 0)
+    {
+        printf("ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_init failed! %d\n", init_ret);
+        NCL_OSAL_Free(thread);
+        ret = NCL_ErrorUndefined;
+        goto EXIT;
+    }
     
     // TODO: Stack size and priority
-    if (thread->stack_size != 0)
-        pthread_attr_setstacksize(&thread->attr, thread->stack_size);
+    // if (thread->stack_size != 0)
+    //     pthread_attr_setstacksize(&thread->attr, thread->stack_size);
 
-    if (thread->schedparam.sched_priority != 0)
-        pthread_attr_setschedparam(&thread->attr, &thread->schedparam);
+    // if (thread->schedparam.sched_priority != 0)
+    //     pthread_attr_setschedparam(&thread->attr, &thread->schedparam);
 
     detach_ret = pthread_attr_setdetachstate(&thread->attr, detachState);
     if (detach_ret != 0)
     {
         printf("ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_setdetachstate failed! %d\n", detach_ret);
+        pthread_attr_destroy(&thread->attr);
         NCL_OSAL_Free(thread);
-        // pthread_attr_destroy(&thread->attr);
         ret = NCL_ErrorUndefined;
         goto EXIT;
     }
 
     // Convert NCL_PTR -> Function pointer
-    thread_ret = pthread_create(&thread->pthread, &thread->attr, (void *(*)(void *))func_name, (void*)param);
+    void *(*start_routine)(void *) = (void *(*)(void *))func_name;
+    thread_ret = pthread_create(&thread->pthread, &thread->attr, start_routine, (void*)param);
+    pthread_attr_destroy(&thread->attr);
     switch (thread_ret) {
         case 0:
             *thread_handle = (NCL_HANDLETYPE)thread;
             printf("[NCL_OSAL_ThreadCreate] - thread id %lu is created\n", thread->pthread);
             ret = NCL_ErrorNone;
-            // pthread_attr_destroy(&thread->attr);
             break;
         case EAGAIN:
             NCL_OSAL_Free(thread);
             printf("ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed EAGAIN %d\n", thread_ret);
-            // pthread_attr_destroy(&thread->attr);
             ret = NCL_ErrorUndefined;
             goto EXIT;
-            break;
         default:
             NCL_OSAL_Free(thread);
             printf("ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed %d\n", thread_ret);
-            // pthread_attr_destroy(&thread->attr);
             ret = NCL_ErrorUndefined;
             goto EXIT;
-            break;
     }
-    
+
     return ret;
 
 EXIT:
