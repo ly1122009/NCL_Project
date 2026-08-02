@@ -1,7 +1,12 @@
 #include <iostream>
 #include <cstdint>
 #include "Math.h"
-
+#include "OSAL_Thread.h"
+#include "OSAL_Semaphore.h"
+#include "OSAL_Mutex.h"
+#include "OSAL_Memory.h"
+#include "NCL_Types.h"
+#include "NCL_Core.h"
 
 int main()
 {
