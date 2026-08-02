@@ -1,115 +1,162 @@
 ---
-Language: Cpp
-# BasedOnStyle:  LLVM
-AccessModifierOffset: -4 # -2
-AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: false
-AlignConsecutiveDeclarations: false
-#AlignEscapedNewlines: Left # Unknown to clang-format-4.0
-AlignOperands: true
-AlignTrailingComments: false
-AllowAllParametersOfDeclarationOnNextLine: false
-AllowShortBlocksOnASingleLine: false
-AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: None
-AllowShortIfStatementsOnASingleLine: false
-AllowShortLoopsOnASingleLine: false
-AlwaysBreakAfterDefinitionReturnType: None
-AlwaysBreakAfterReturnType: None
-AlwaysBreakBeforeMultilineStrings: false
-AlwaysBreakTemplateDeclarations: false # true
-BinPackArguments: true
-BinPackParameters: true
-BraceWrapping:
-  AfterClass: false # true
-  AfterControlStatement: false # true
-  AfterEnum: false # true
-  AfterFunction: false # true
-  AfterNamespace: false # true
-  AfterObjCDeclaration: false # true
-  AfterStruct: false # true
-  AfterUnion: false # true
-  AfterExternBlock: false # true
-  BeforeCatch: false # true
-  BeforeElse: false # true
-  IndentBraces: false # true
-  #SplitEmptyFunction: true
-  #SplitEmptyRecord: true
-  #SplitEmptyNamespace: true
-BreakBeforeBinaryOperators: None
-BreakBeforeBraces: Custom # Allman # Attach
-BreakBeforeInheritanceComma: false
-BreakBeforeTernaryOperators: false
-BreakConstructorInitializersBeforeComma: false
-BreakConstructorInitializers: BeforeComma # BeforeColon
-BreakAfterJavaFieldAnnotations: false
-BreakStringLiterals: false # true
-ColumnLimit: 100
-CommentPragmas: "^ IWYU pragma:"
-#CompactNamespaces: false
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
-ConstructorInitializerIndentWidth: 4
-ContinuationIndentWidth: 4
-Cpp11BracedListStyle: false
-DerivePointerAlignment: false
-DisableFormat: false
-ExperimentalAutoDetectBinPacking: false
-#FixNamespaceComments: false
-ForEachMacros:
-  - foreach
-  - Q_FOREACH
-  - BOOST_FOREACH
-#IncludeBlocks: Preserve
-IncludeCategories:
-  - Regex: '^"(llvm|llvm-c|clang|clang-c)/'
-    Priority: 2
-  - Regex: '^(<|"(gtest|gmock|isl|json)/)'
-    Priority: 3
-  - Regex: ".*"
-    Priority: 1
-IncludeIsMainRegex: "(Test)?$"
-IndentCaseLabels: false # true
-#IndentPPDirectives: None
-IndentWidth: 4 #2
-IndentWrappedFunctionNames: false
-JavaScriptQuotes: Leave
-JavaScriptWrapImports: true
-KeepEmptyLinesAtTheStartOfBlocks: false # true
-MacroBlockBegin: ""
-MacroBlockEnd: ""
-MaxEmptyLinesToKeep: 1
-NamespaceIndentation: None
-ObjCBlockIndentWidth: 4 # 2
-ObjCSpaceAfterProperty: true # false
-ObjCSpaceBeforeProtocolList: true
+# .clang-format — Linux Embedded C Project
+#
+# Target:    Linux Embedded C (C11/C17)
+# Style:     Linux Kernel inspired, adapted for embedded readability
+# Toolchain: GCC / Clang cross-compiler
+#
+# Usage:
+#   clang-format -i /path/to/source/file.c
+#   Or via editor integration / CI pipeline
+#
+# Reference baseline: Linux kernel coding style + project team conventions
 
-# Taken from git's rules
-PenaltyBreakAssignment: 10 # 2 # Unknown to clang-format-4.0
-PenaltyBreakBeforeFirstCallParameter: 30 # 19
-PenaltyBreakComment: 10 # 300
-PenaltyBreakFirstLessLess: 0 # 120
-PenaltyBreakString: 10 # 1000
-PenaltyExcessCharacter: 100 # 1000000
-PenaltyReturnTypeOnItsOwnLine: 60
-PointerAlignment: Right # Left
-ReflowComments: false # true
-SortIncludes: false
-#SortUsingDeclarations: false # true
-SpaceAfterCStyleCast: false
-SpaceAfterTemplateKeyword: true
+Language:        Cpp        # Applies to C files as well (clang-format uses Cpp for C/C++)
+Standard:        c++03      # Closest to C11 for clang-format parsing; use --assume-filename=.c in CLI
+
+# ---------------------------------------------------------------------------
+# Indentation & Tabs
+# ---------------------------------------------------------------------------
+IndentWidth:                    4       # 4 spaces per indent level (kernel uses 8, but 4 is more readable)
+TabWidth:                       4
+UseTab:                         Never   # Spaces only — consistent across editors
+ContinuationIndentWidth:        4       # Indent for wrapped lines
+IndentCaseLabels:               true    # Indent case labels inside switch
+ConstructorInitializerIndentWidth: 4
+
+# ---------------------------------------------------------------------------
+# Column Limit
+# ---------------------------------------------------------------------------
+ColumnLimit:                    100     # 100 chars; kernel uses 80 but embedded code often needs more
+
+# ---------------------------------------------------------------------------
+# Braces (Linux kernel: braces on same line for control, new line for functions)
+# ---------------------------------------------------------------------------
+BreakBeforeBraces:              Custom
+BraceWrapping:
+  AfterFunction:                true    # Function body brace on new line (kernel style)
+  AfterControlStatement:        false   # if/for/while brace on same line
+  AfterEnum:                    false
+  AfterStruct:                  false
+  AfterUnion:                   false
+  AfterExternBlock:             false
+  AfterClass:                   false   # N/A for C, kept for consistency
+  AfterNamespace:               false   # N/A for C
+  AfterObjCDeclaration:         false
+  BeforeCatch:                  false
+  BeforeElse:                   false   # } else { on same line
+  IndentBraces:                 false
+
+# ---------------------------------------------------------------------------
+# Short constructs — keep them multi-line for embedded readability
+# ---------------------------------------------------------------------------
+AllowShortFunctionsOnASingleLine:   None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine:       false
+AllowShortBlocksOnASingleLine:      false
+AllowShortCaseLabelsOnASingleLine:  false
+
+# ---------------------------------------------------------------------------
+# Line breaking
+# ---------------------------------------------------------------------------
+BreakBeforeBinaryOperators:         None    # operator stays at end of line
+BreakBeforeTernaryOperators:        false
+BreakStringLiterals:                false   # Don't break string literals automatically
+AlwaysBreakAfterReturnType:         None
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakBeforeMultilineStrings:  false
+
+# ---------------------------------------------------------------------------
+# Alignment
+# ---------------------------------------------------------------------------
+AlignAfterOpenBracket:          Align
+AlignConsecutiveAssignments:    false   # Don't force-align = across lines (can obscure diffs)
+AlignConsecutiveDeclarations:   false
+AlignOperands:                  true
+AlignTrailingComments:          false   # Trailing comment alignment can be noisy
+
+# ---------------------------------------------------------------------------
+# Parameters & Arguments
+# ---------------------------------------------------------------------------
+BinPackArguments:               true    # Pack args when they fit
+BinPackParameters:              true
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# ---------------------------------------------------------------------------
+# Pointer Alignment (Linux style: int *ptr)
+# ---------------------------------------------------------------------------
+PointerAlignment:               Right   # int *p (kernel style, not int* p)
+DerivePointerAlignment:         false
+
+# ---------------------------------------------------------------------------
+# Spaces
+# ---------------------------------------------------------------------------
+SpaceAfterCStyleCast:           false   # (uint8_t)value — no space after cast
 SpaceBeforeAssignmentOperators: true
-#SpaceBeforeCtorInitializerColon: true # false
-#SpaceBeforeInheritanceColon: true # false
-SpaceBeforeParens: ControlStatements
-#SpaceBeforeRangeBasedForLoopColon: true # false
-SpaceInEmptyParentheses: false
-SpacesBeforeTrailingComments: 1
-SpacesInAngles: false
-SpacesInContainerLiterals: false # true
-SpacesInCStyleCastParentheses: false
-SpacesInParentheses: false
-SpacesInSquareBrackets: false
-Standard: Cpp11 # Cpp03
-TabWidth: 4 # 8
-UseTab: Never # Always
+SpaceBeforeParens:              ControlStatements   # if (, for (, while (
+SpaceInEmptyParentheses:        false
+SpacesBeforeTrailingComments:   2       # Minimum 2 spaces before inline comments
+SpacesInAngles:                 false
+SpacesInContainerLiterals:      false
+SpacesInCStyleCastParentheses:  false
+SpacesInParentheses:            false
+SpacesInSquareBrackets:         false
+SpaceAfterTemplateKeyword:      false   # N/A for C
+
+# ---------------------------------------------------------------------------
+# Empty Lines
+# ---------------------------------------------------------------------------
+MaxEmptyLinesToKeep:            1
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+# ---------------------------------------------------------------------------
+# Comments
+# ---------------------------------------------------------------------------
+ReflowComments:                 false   # Don't auto-reflow comments (can break intentional formatting)
+CommentPragmas:                 '^(NOLINT|NOLINTNEXTLINE|TODO|FIXME|HACK|NOTE|IWYU pragma:)'
+
+# ---------------------------------------------------------------------------
+# Includes — preserve manual grouping (system vs local headers)
+# ---------------------------------------------------------------------------
+SortIncludes:                   false   # Don't auto-sort; developer manages include order
+IncludeCategories:
+  - Regex:    '^<(linux|asm|asm-generic|uapi)/'   # Linux kernel headers
+    Priority: 1
+  - Regex:    '^<(sys|pthread|errno|signal|unistd|fcntl|termios|netinet|arpa)/'  # POSIX/system
+    Priority: 2
+  - Regex:    '^<'                                  # Other system headers (stdint, stdio, etc.)
+    Priority: 3
+  - Regex:    '^"'                                  # Project-local headers
+    Priority: 4
+IncludeIsMainRegex: '(Test|_test|_unittest)?$'
+
+# ---------------------------------------------------------------------------
+# Macros
+# ---------------------------------------------------------------------------
+ForEachMacros:
+  - 'list_for_each'
+  - 'list_for_each_entry'
+  - 'list_for_each_entry_safe'
+  - 'hlist_for_each_entry'
+  - 'for_each_cpu'
+  - 'for_each_possible_cpu'
+  - 'for_each_online_cpu'
+
+# ---------------------------------------------------------------------------
+# Penalties (tuned for embedded code — prefer staying on same line)
+# ---------------------------------------------------------------------------
+PenaltyBreakAssignment:                  10
+PenaltyBreakBeforeFirstCallParameter:    30
+PenaltyBreakComment:                     10
+PenaltyBreakFirstLessLess:               0
+PenaltyBreakString:                      10
+PenaltyExcessCharacter:                  100
+PenaltyReturnTypeOnItsOwnLine:           60
+
+# ---------------------------------------------------------------------------
+# Miscellaneous
+# ---------------------------------------------------------------------------
+DisableFormat:                  false
+ExperimentalAutoDetectBinPacking: false
+Cpp11BracedListStyle:           false   # Use C-style brace init: {0, 1, 2}
 ...

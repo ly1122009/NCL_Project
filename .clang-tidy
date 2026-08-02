@@ -1,97 +1,125 @@
 ---
-# Copyright © 2023-2024 Alexandre Coderre-Chabot
+# .clang-tidy — Linux Embedded C Project
 #
-# This file is hosted at:
-#     https://github.com/acodcha/clang-format-tidy
+# Target: Linux Embedded C (C11/C17), bare-metal or POSIX environment
+# Toolchain: GCC / Clang cross-compiler
 #
-# This file is licensed under the MIT License:
-#     https://mit-license.org
+# Usage:
+#   clang-tidy --extra-arg=-std=c17 /path/to/source/file.c
+#   Or via CMake with -DCMAKE_C_CLANG_TIDY="clang-tidy;--extra-arg=-std=c17"
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-# associated documentation files (the "Software"), to deal in the Software without restriction,
-# including without limitation the rights to use, copy, modify, merge, publish, distribute,
-# sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#   - The above copyright notice and this permission notice shall be included in all copies or
-#     substantial portions of the Software.
-#   - THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
-#     BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-#     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-#     DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM
-#     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#
-# This is a configuration file for use with LLVM's Clang-Tidy automatic source code linter
-#     https://clang.llvm.org/extra/clang-tidy
-#
-# To run the linter on your source code files, copy this file to the root directory of your source
-# code repository, name it ".clang-tidy", and run:
-#     clang-tidy --extra-arg=-std=c++20 /path/to/source/code/files
-#
+# Notes:
+#   - C++ specific checks are disabled (modernize-*, fuchsia-*, etc.)
+#   - MISRA-aligned checks are enabled where applicable via cert-* and bugprone-*
+#   - Embedded-specific considerations: no dynamic allocation warnings, register usage, etc.
+
 Checks: '
-*,
-abseil-*,
-altera-*,
-android-*,
-boost-*,
-bugprone-*,
--bugprone-easily-swappable-parameters,
-cert-*,
--cert-dcl21-cpp,
--cert-err58-cpp,
-clang-analyzer-*,
-concurrency-*,
-cppcoreguidelines-*,
--cppcoreguidelines-avoid-magic-numbers,
--cppcoreguidelines-non-private-member-variables-in-classes,
-darwin-*,
-fuchsia-*,
--fuchsia-default-arguments-calls,
--fuchsia-default-arguments-declarations,
--fuchsia-multiple-inheritance,
--fuchsia-overloaded-operator,
--fuchsia-trailing-return,
--fuchsia-virtual-inheritance,
-google-*,
--google-objc-avoid-throwing-exception,
--google-objc-function-naming,
--google-objc-global-variable-declaration,
--google-readability-todo,
-hicpp-*,
--hicpp-no-assembler,
-linuxkernel-*,
-llvm-*
--llvm-header-guard,
--llvm-include-order,
-llvmlibc-*,
--llvmlibc-callee-namespace,
--llvmlibc-implementation-in-namespace,
--llvmlibc-inline-function-decl,
--llvmlibc-restrict-system-libc-headers,
-misc-*,
--misc-non-private-member-variables-in-classes,
-modernize-*,
--modernize-use-trailing-return-type,
-mpi-*,
-objc-*,
-openmp-*,
-performance-*,
--performance-avoid-endl,
-portability-*,
--portability-restrict-system-includes,
-readability-*,
--readability-function-cognitive-complexity,
--readability-identifier-length,
--readability-magic-numbers,
-zircon-*,
--zircon-temporary-objects,
+  clang-analyzer-*,
+
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-macro-parentheses,
+
+  cert-*,
+  -cert-dcl37-c,
+  -cert-dcl51-cpp,
+
+  concurrency-*,
+
+  linuxkernel-*,
+
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  -misc-unused-parameters,
+
+  performance-*,
+
+  portability-*,
+  -portability-restrict-system-includes,
+
+  readability-*,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -readability-isolate-declaration,
+
+  -modernize-*,
+  -fuchsia-*,
+  -google-*,
+  -hicpp-*,
+  -cppcoreguidelines-*,
+  -abseil-*,
+  -altera-*,
+  -boost-*,
+  -darwin-*,
+  -llvmlibc-*,
+  -mpi-*,
+  -objc-*,
+  -openmp-*,
+  -zircon-*,
+  -android-*,
 '
+
 WarningsAsErrors: ''
-HeaderFilterRegex: ''
+
+# Only lint headers inside the project (adjust to your include path pattern)
+HeaderFilterRegex: '(src|include|lib)/.*\.(h|H)$'
+
 AnalyzeTemporaryDtors: false
-FormatStyle: none
+
+# Let clang-format handle formatting separately
+FormatStyle: file
+
 User: ''
+
 CheckOptions:
+  # Allow positive integer literals in signed bitwise ops (common in embedded bitmasks)
   - key: hicpp-signed-bitwise.IgnorePositiveIntegerLiterals
     value: 'true'
-  - key: readability-redundant-member-init.IgnoreBaseInCopyConstructors
+
+  # Naming convention: snake_case for functions and variables (Linux kernel style)
+  - key: readability-identifier-naming.FunctionCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.VariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.ParameterCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.LocalVariableCase
+    value: 'lower_case'
+
+  # Macros and constants: UPPER_CASE (C convention)
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.EnumConstantCase
+    value: 'UPPER_CASE'
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: 'UPPER_CASE'
+
+  # Typedefs: allow snake_case with _t suffix (POSIX/Linux convention)
+  - key: readability-identifier-naming.TypedefCase
+    value: 'lower_case'
+  - key: readability-identifier-naming.TypedefSuffix
+    value: '_t'
+
+  # Struct type names: snake_case
+  - key: readability-identifier-naming.StructCase
+    value: 'lower_case'
+
+  # Enum type names: snake_case
+  - key: readability-identifier-naming.EnumCase
+    value: 'lower_case'
+
+  # Suppress magic number warnings for common embedded constants
+  - key: readability-magic-numbers.IgnoredIntegerValues
+    value: '0;1;2;4;8;16;32;64;128;255;256;512;1024'
+
+  # Bugprone: allow assert() macros without side effects check
+  - key: bugprone-assert-side-effect.AssertMacros
+    value: 'assert,ASSERT,BUG_ON'
+
+  # Allow use of unsigned types in loops (common in embedded)
+  - key: cert-int09-c.AllowIntegerTypes
     value: 'true'
+...
