@@ -12,9 +12,9 @@ NCL_ERRORTYPE NCL_OSAL_SemaphoreCreate(NCL_HANDLETYPE *semaphoreHandle);
 NCL_ERRORTYPE NCL_OSAL_SemaphoreTerminate(NCL_HANDLETYPE semaphoreHandle);
 NCL_ERRORTYPE NCL_OSAL_SemaphoreTryWait(NCL_HANDLETYPE semaphoreHandle);
 NCL_ERRORTYPE NCL_OSAL_SemaphoreWait(NCL_HANDLETYPE semaphoreHandle);
-NCL_HANDLETYPE NCL_OSAL_SemaphorePost(NCL_HANDLETYPE semaphoreHandle);
-NCL_HANDLETYPE NCL_OSAL_Get_SemaphoreCount(NCL_HANDLETYPE semaphoreHandle, NCL_OUT NCL_U32* value);
-NCL_HANDLETYPE NCL_OSAL_Set_SemaphoreCount(NCL_HANDLETYPE semaphoreHandle, NCL_IN const NCL_U32 value);
+NCL_ERRORTYPE NCL_OSAL_SemaphorePost(NCL_HANDLETYPE semaphoreHandle);
+NCL_ERRORTYPE NCL_OSAL_Get_SemaphoreCount(NCL_HANDLETYPE semaphoreHandle, NCL_OUT NCL_S32* value);
+NCL_ERRORTYPE NCL_OSAL_Set_SemaphoreCount(NCL_HANDLETYPE semaphoreHandle, NCL_IN const NCL_S32 value);
 
 
 #ifdef __cplusplus
