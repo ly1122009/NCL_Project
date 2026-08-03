@@ -121,7 +121,7 @@ NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE *thread_handle) {
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
-  pthread_attr_getdetachstate(thread->attr, &isDetached);
+  pthread_attr_getdetachstate(&thread->attr, &isDetached);
   if (isDetached == PTHREAD_CREATE_JOINABLE)
   {
     join_ret = pthread_join(thread->pthread, NULL);
