@@ -44,7 +44,8 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
     goto EXIT;
   }
 
-  thread = (NCL_THREAD_HANDLE_TYPE *)NCL_OSAL_Malloc(sizeof(NCL_THREAD_HANDLE_TYPE));
+  thread =
+      (NCL_THREAD_HANDLE_TYPE *)NCL_OSAL_Malloc(sizeof(NCL_THREAD_HANDLE_TYPE));
   if (thread == NULL) {
     ret = NCL_ErrorInsufficientResources;
     goto EXIT;
@@ -122,20 +123,19 @@ NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE *thread_handle) {
     goto EXIT;
   }
   pthread_attr_getdetachstate(&thread->attr, &isDetached);
-  if (isDetached == PTHREAD_CREATE_JOINABLE)
-  {
+  if (isDetached == PTHREAD_CREATE_JOINABLE) {
     join_ret = pthread_join(thread->pthread, NULL);
     if (0 != join_ret) {
-        printf("ERROR: [NCL_OSAL_ThreadTerminate] - pthread_join failed %d\n",
-            join_ret);
-        ret = NCL_ErrorBadParameter;
-        goto EXIT;
+      printf("ERROR: [NCL_OSAL_ThreadTerminate] - pthread_join failed %d\n",
+             join_ret);
+      ret = NCL_ErrorBadParameter;
+      goto EXIT;
     }
   }
-    NCL_OSAL_Free(thread);
-    printf("[NCL_OSAL_ThreadTerminate] thread id %lu join successfully %d\n",
-            thread->pthread, join_ret);
-    ret = NCL_ErrorNone;
+  NCL_OSAL_Free(thread);
+  printf("[NCL_OSAL_ThreadTerminate] thread id %lu join successfully %d\n",
+         thread->pthread, join_ret);
+  ret = NCL_ErrorNone;
 
 EXIT:
   printf("ERROR: [NCL_OSAL_ThreadCreate] out - ret: %d", ret);
@@ -147,7 +147,7 @@ void NCL_OSAL_ThreadExit(void *value_ptr) {
   return;
 }
 
-void NCL_OSAL_SleepMillisec(NCL_U32 ms) {
-  usleep(ms);
+void NCL_OSAL_SleepMillisec(NCL_S32 ms) {
+  usleep(ms * 1000);
   return;
 }
