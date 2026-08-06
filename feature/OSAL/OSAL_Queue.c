@@ -1,6 +1,6 @@
-#include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 
 #include "NCL_Core.h"
@@ -81,9 +81,60 @@ EXIT:
   return ret;
 }
 
-NCL_ERRORTYPE NCL_OSAL_QueueTerminate(NCL_HANDLETYPE queueHandle);
+NCL_ERRORTYPE NCL_OSAL_QueueTerminate(NCL_HANDLETYPE queueHandle) {
+  NCL_ERRORTYPE ret = NCL_ErrorNone;
+  NCL_QUEUE *queue = (NCL_QUEUE *)queueHandle;
+  NCL_QElem *currElem = NULL;
+  if (!queue) {
+    ret = NCL_ErrorBadParameter;
+    goto EXIT;
+  }
+  NCL_OSAL_MutexLock(&queue->m_qMutex);
+  currElem = queue->m_first;
+  while (currElem) {
+    NCL_QElem *temp = currElem;
+    currElem = currElem->m_qNext;
+    NCL_OSAL_Free(temp);
+  }
+  NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+  NCL_OSAL_MutexTerminate(&queue->m_qMutex);
+  NCL_OSAL_Free(queue);
+  
+  ret = NCL_ErrorNone;
+  goto EXIT;
+
+EXIT:
+  printf("[NCL_OSAL_QueueTerminate] - ret %d\n", ret);
+  return ret;
+}
+
 NCL_ERRORTYPE NCL_OSAL_Queue(NCL_HANDLETYPE queueHandle,
-                             NCL_IN const NCL_PTR data);
+                             NCL_IN const NCL_PTR data)
+{
+  NCL_ERRORTYPE ret = NCL_ErrorNone;
+  NCL_QUEUE* queue = (NCL_QUEUE*)queueHandle;
+  NCL_QElem* newElem = NULL;
+  if (!queue)
+  {
+    ret = NCL_ErrorBadParameter;
+    goto EXIT;    
+  }
+  if (queue->m_last == queue->m_first && queue->numELem > queue->maxNumElem)
+  {
+    printf("[NCL_OSAL_Queue]: cannot queue anymore, full of queue!");
+    ret = NCL_ErrorUndefined;
+    goto EXIT;
+  }
+    NCL_OSAL_MutexLock(&queue->m_qMutex);
+    newElem = queue->m_last;
+    newElem->m_qNext->m_data = data;
+    queue->m_last = queue->m_last->m_qNext;
+
+  NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+EXIT:
+  printf("[NCL_OSAL_Queue] - ret %d\n", ret);
+  return ret;
+}
 NCL_ERRORTYPE NCL_OSAL_Dequeue(NCL_HANDLETYPE queueHandle,
                                NCL_OUT NCL_PTR data);
 NCL_ERRORTYPE NCL_OSAL_Queue_SetElem(NCL_HANDLETYPE queueHandle,
