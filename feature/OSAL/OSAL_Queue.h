@@ -18,8 +18,8 @@ typedef struct _NCL_QElem {
 typedef struct _NCL_QUEUE {
   NCL_QElem *m_first;
   NCL_QElem *m_last;
-  int numELem;
-  int maxNumElem;
+  NCL_U32 numELem;
+  NCL_U32 maxNumElem;
   NCL_HANDLETYPE m_qMutex;
 } NCL_QUEUE;
 
@@ -28,11 +28,11 @@ NCL_ERRORTYPE NCL_OSAL_QueueTerminate(NCL_HANDLETYPE queueHandle);
 NCL_ERRORTYPE NCL_OSAL_Queue(NCL_HANDLETYPE queueHandle,
                              NCL_IN const NCL_PTR data);
 NCL_ERRORTYPE NCL_OSAL_Dequeue(NCL_HANDLETYPE queueHandle,
-                               NCL_OUT NCL_PTR data);
-NCL_ERRORTYPE NCL_OSAL_Queue_SetElem(NCL_HANDLETYPE queueHandle,
-                                     NCL_IN const NCL_PTR data);
-NCL_ERRORTYPE NCL_OSAL_Queue_GetELem(NCL_HANDLETYPE queueHandle,
-                                     NCL_OUT NCL_PTR data);
+                               NCL_OUT NCL_PTR *data);
+NCL_ERRORTYPE NCL_OSAL_Queue_Set_numElem(NCL_HANDLETYPE queueHandle,
+                                     NCL_IN const NCL_U32 data);
+NCL_ERRORTYPE NCL_OSAL_Queue_Get_numELem(NCL_HANDLETYPE queueHandle,
+                                     NCL_OUT NCL_U32* data);
 NCL_ERRORTYPE NCL_OSAL_QueueReset(NCL_HANDLETYPE queueHandle);
 
 #ifdef __cplusplus
