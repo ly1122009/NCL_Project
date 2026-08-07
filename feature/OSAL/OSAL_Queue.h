@@ -25,14 +25,14 @@ typedef struct _NCL_QUEUE {
 
 NCL_ERRORTYPE NCL_OSAL_QueueCreate(NCL_HANDLETYPE *queueHandle, int maxNumElem);
 NCL_ERRORTYPE NCL_OSAL_QueueTerminate(NCL_HANDLETYPE queueHandle);
-NCL_ERRORTYPE NCL_OSAL_Queue(NCL_HANDLETYPE queueHandle,
-                             NCL_IN const NCL_PTR data);
+NCL_ERRORTYPE NCL_OSAL_Enqueue(NCL_HANDLETYPE queueHandle,
+                               NCL_IN const NCL_PTR data);
 NCL_ERRORTYPE NCL_OSAL_Dequeue(NCL_HANDLETYPE queueHandle,
                                NCL_OUT NCL_PTR *data);
 NCL_ERRORTYPE NCL_OSAL_Queue_Set_numElem(NCL_HANDLETYPE queueHandle,
-                                     NCL_IN const NCL_U32 data);
+                                         NCL_IN const NCL_U32 data);
 NCL_ERRORTYPE NCL_OSAL_Queue_Get_numELem(NCL_HANDLETYPE queueHandle,
-                                     NCL_OUT NCL_U32* data);
+                                         NCL_OUT NCL_U32 *data);
 NCL_ERRORTYPE NCL_OSAL_QueueReset(NCL_HANDLETYPE queueHandle);
 
 #ifdef __cplusplus

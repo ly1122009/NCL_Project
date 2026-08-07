@@ -118,7 +118,7 @@ EXIT:
   return ret;
 }
 
-NCL_ERRORTYPE NCL_OSAL_Queue(NCL_HANDLETYPE queueHandle,
+NCL_ERRORTYPE NCL_OSAL_Enqueue(NCL_HANDLETYPE queueHandle,
                              NCL_IN const NCL_PTR data) {
   NCL_ERRORTYPE ret = NCL_ErrorNone;
   NCL_QUEUE *queue = (NCL_QUEUE *)queueHandle;
