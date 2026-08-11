@@ -24,6 +24,9 @@ set(SOURCES
 # Executable
 add_executable(ncl_app ${SOURCES})
 
+# Add tests subdirectory
+add_subdirectory(tests)
+
 # Include directories (Modern CMake approach)
 target_include_directories(ncl_app PRIVATE
     feature/core/inc
