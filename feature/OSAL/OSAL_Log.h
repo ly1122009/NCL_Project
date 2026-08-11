@@ -20,24 +20,23 @@ typedef enum _LOG_LEVEL {
 
 NCL_ERRORTYPE NCL_OSAL_LogInit(const char *ident, int facility);
 NCL_ERRORTYPE NCL_OSAL_LogSetLevel(LOG_LEVEL level);
-void NCL_OSAL_Log(LOG_LEVEL level, const char *format, ...);
 NCL_ERRORTYPE NCL_OSAL_LogDeinit(void);
 
-#define LOGV(fmt, ...)                                                         \
-  NCL_OSAL_Log(LOG_VERBOSE, "[%s:%d %s] " fmt, __FILE__, __LINE__, __func__,   \
-               ##__VA_ARGS__)
-#define LOGD(fmt, ...)                                                         \
-  NCL_OSAL_Log(LOG_DEBUG, "[%s:%d %s] " fmt, __FILE__, __LINE__, __func__,     \
-               ##__VA_ARGS__)
-#define LOGI(fmt, ...)                                                         \
-  NCL_OSAL_Log(LOG_INFO, "[%s:%d %s] " fmt, __FILE__, __LINE__, __func__,      \
-               ##__VA_ARGS__)
-#define LOGW(fmt, ...)                                                         \
-  NCL_OSAL_Log(LOG_WARNING, "[%s:%d %s] " fmt, __FILE__, __LINE__, __func__,   \
-               ##__VA_ARGS__)
-#define LOGE(fmt, ...)                                                         \
-  NCL_OSAL_Log(LOG_ERROR, "[%s:%d %s] " fmt, __FILE__, __LINE__, __func__,     \
-               ##__VA_ARGS__)
+// Hàm Core xử lý format log (nhận thêm tag, file, line)
+void NCL_OSAL_Log(LOG_LEVEL level, const char *tag, const char *file, int line,
+                  const char *format, ...);
+
+// Cập nhật các Macro truyền tag vào NCL_OSAL_Log
+#define LOGV(tag, fmt, ...)                                                    \
+  NCL_OSAL_Log(LOG_VERBOSE, tag, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOGD(tag, fmt, ...)                                                    \
+  NCL_OSAL_Log(LOG_DEBUG, tag, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOGI(tag, fmt, ...)                                                    \
+  NCL_OSAL_Log(LOG_INFO, tag, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOGW(tag, fmt, ...)                                                    \
+  NCL_OSAL_Log(LOG_WARNING, tag, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOGE(tag, fmt, ...)                                                    \
+  NCL_OSAL_Log(LOG_ERROR, tag, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
 
 #ifdef __cplusplus
 }
