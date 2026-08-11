@@ -1,20 +1,24 @@
 cmake_minimum_required(VERSION 3.15)
-project(NCL_Project LANGUAGES C CXX)
+project(NCL_Project LANGUAGES C)
 
-# Set C and C++ standards
+# Set C standards
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 # Source files
 set(SOURCES
-    main.cpp
-    feature/core/src/Math.cpp
+    main.c
+    feature/core/src/Math.c
     feature/OSAL/OSAL_Memory.c
     feature/OSAL/OSAL_Thread.c
+    feature/OSAL/OSAL_Event.c
+    feature/OSAL/OSAL_Library.c
+    feature/OSAL/OSAL_Log.c
+    feature/OSAL/OSAL_Mutex.c
+    feature/OSAL/OSAL_Queue.c
+    feature/OSAL/OSAL_Semaphore.c
 )
 
 # Executable
