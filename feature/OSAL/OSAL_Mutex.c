@@ -56,6 +56,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexTerminate(NCL_HANDLETYPE mutexHandle) {
     ret = NCL_ErrorUndefined;
     goto EXIT;
   }
+  NCL_OSAL_Free(mutex);
 
 EXIT:
   printf("ERROR: [NCL_OSAL_MutexTerminate] - %d\n", ret);
