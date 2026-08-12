@@ -1,22 +1,26 @@
+#include <c++/v1/stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdatomic.h>
 
 #include "OSAL_Memory.h"
 
-static int mem_cnt = 0;
+static _Atomic(int) mem_cnt = 0;
 
 NCL_PTR NCL_OSAL_Malloc(NCL_U32 size)
 {
-    mem_cnt++;
+    // mem_cnt++;
+    atomic_fetch_add(&mem_cnt, 1);
     return (NCL_PTR)malloc(size);
 }
 
 void    NCL_OSAL_Free(NCL_PTR addr)
 {
-    mem_cnt--;
+    // mem_cnt--;
     if (addr)
     {
+        atomic_fetch_sub(&mem_cnt, 1);
         free(addr);
     }
     return;
