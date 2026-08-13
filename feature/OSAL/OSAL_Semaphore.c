@@ -2,10 +2,13 @@
 #include "NCL_Core.h"
 #include "NCL_Types.h"
 #include "OSAL_Memory.h"
+#include "OSAL_Log.h"
 #include <pthread.h>
 #include <semaphore.h>
-#include <stdio.h>
 // #include <stdlib.h>
+
+#define NCL_LOG_TAG "NCL_TAG"
+#define NCL_LOG_TAG2 "OSAL_SEM"
 
 NCL_ERRORTYPE NCL_OSAL_SemaphoreCreate(NCL_HANDLETYPE *semaphoreHandle) {
   NCL_ERRORTYPE ret = NCL_ErrorNone;
@@ -27,7 +30,7 @@ NCL_ERRORTYPE NCL_OSAL_SemaphoreCreate(NCL_HANDLETYPE *semaphoreHandle) {
   *semaphoreHandle = (NCL_HANDLETYPE)semaphore;
 
 EXIT:
-  printf("ERROR: [NCL_OSAL_SemaphoreCreate] - %d\n", ret);
+  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_SemaphoreCreate] - %d", ret);
   return ret;
 }
 
@@ -49,7 +52,7 @@ NCL_ERRORTYPE NCL_OSAL_SemaphoreTerminate(NCL_HANDLETYPE semaphoreHandle) {
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_SemaphoreTerminate] - ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SemaphoreTerminate] - ret %d", ret);
   return ret;
 }
 
@@ -67,7 +70,7 @@ NCL_ERRORTYPE NCL_OSAL_SemaphoreTryWait(NCL_HANDLETYPE semaphoreHandle) {
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_SemaphoreTryWait] - ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SemaphoreTryWait] - ret %d", ret);
   return ret;
 }
 
@@ -85,7 +88,7 @@ NCL_ERRORTYPE NCL_OSAL_SemaphoreWait(NCL_HANDLETYPE semaphoreHandle) {
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_SemaphoreWait] - ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SemaphoreWait] - ret %d", ret);
   return ret;
 }
 
@@ -103,7 +106,7 @@ NCL_ERRORTYPE NCL_OSAL_SemaphorePost(NCL_HANDLETYPE semaphoreHandle) {
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_SemaphorePost] - ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SemaphorePost] - ret %d", ret);
   return ret;
 }
 NCL_ERRORTYPE NCL_OSAL_Get_SemaphoreCount(NCL_HANDLETYPE semaphoreHandle,
@@ -123,7 +126,7 @@ NCL_ERRORTYPE NCL_OSAL_Get_SemaphoreCount(NCL_HANDLETYPE semaphoreHandle,
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_Get_SemaphoreCount] - ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_Get_SemaphoreCount] - ret %d", ret);
   return ret;
 }
 
@@ -143,6 +146,6 @@ NCL_ERRORTYPE NCL_OSAL_Set_SemaphoreCount(NCL_HANDLETYPE semaphoreHandle,
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_Set_SemaphoreCount] - ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_Set_SemaphoreCount] - ret %d", ret);
   return ret;
 }

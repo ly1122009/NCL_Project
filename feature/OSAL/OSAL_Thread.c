@@ -10,6 +10,10 @@
 #include "NCL_Types.h"
 #include "OSAL_Memory.h"
 #include "OSAL_Thread.h"
+#include "OSAL_Log.h"
+
+#define NCL_LOG_TAG "NCL_TAG"
+#define NCL_LOG_TAG2 "OSAL_THREAD"
 
 typedef struct _NCL_THREAD_HANDLE_TYPE {
   pthread_t pthread;
@@ -55,7 +59,7 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
   // pthread_attr_init(&thread->attr);
   init_ret = pthread_attr_init(&thread->attr);
   if (init_ret != 0) {
-    printf("ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_init failed! %d\n",
+    LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_init failed! %d",
            init_ret);
     ret = NCL_ErrorUndefined;
     goto FREE_THREAD;
@@ -70,8 +74,8 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
 
   detach_ret = pthread_attr_setdetachstate(&thread->attr, detachState);
   if (detach_ret != 0) {
-    printf("ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_setdetachstate "
-           "failed! %d\n",
+    LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_setdetachstate "
+           "failed! %d",
            detach_ret);
     ret = NCL_ErrorUndefined;
     goto DESTROY_ATTR;
@@ -85,18 +89,18 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
   switch (thread_ret) {
   case 0:
     *thread_handle = (NCL_HANDLETYPE)thread;
-    printf("[NCL_OSAL_ThreadCreate] - thread id %lu is created\n",
+    LOGI(NCL_LOG_TAG2, "[NCL_OSAL_ThreadCreate] - thread id %lu is created",
            thread->pthread);
     ret = NCL_ErrorNone;
     break;
   case EAGAIN:
-    printf(
-        "ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed EAGAIN %d\n",
+    LOGE(NCL_LOG_TAG2,
+        "ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed EAGAIN %d",
         thread_ret);
     ret = NCL_ErrorUndefined;
     goto FREE_THREAD;
   default:
-    printf("ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed %d\n",
+    LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed %d",
            thread_ret);
     ret = NCL_ErrorUndefined;
     goto FREE_THREAD;
@@ -109,7 +113,7 @@ DESTROY_ATTR:
 FREE_THREAD:
   NCL_OSAL_Free(thread);
 EXIT:
-  printf("ERROR: [NCL_OSAL_ThreadCreate] out - ret: %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_ThreadCreate] out - ret: %d", ret);
   return ret;
 }
 
@@ -126,19 +130,19 @@ NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE *thread_handle) {
   if (isDetached == PTHREAD_CREATE_JOINABLE) {
     join_ret = pthread_join(thread->pthread, NULL);
     if (0 != join_ret) {
-      printf("ERROR: [NCL_OSAL_ThreadTerminate] - pthread_join failed %d\n",
+      LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_ThreadTerminate] - pthread_join failed %d",
              join_ret);
       ret = NCL_ErrorBadParameter;
       goto EXIT;
     }
   }
   NCL_OSAL_Free(thread);
-  printf("[NCL_OSAL_ThreadTerminate] thread id %lu join successfully %d\n",
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_ThreadTerminate] thread id %lu join successfully %d",
          thread->pthread, join_ret);
   ret = NCL_ErrorNone;
 
 EXIT:
-  printf("ERROR: [NCL_OSAL_ThreadCreate] out - ret: %d", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_ThreadTerminate] out - ret: %d", ret);
   return ret;
 }
 

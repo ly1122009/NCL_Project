@@ -9,6 +9,10 @@
 #include "OSAL_Event.h"
 #include "OSAL_Memory.h"
 #include "OSAL_Mutex.h"
+#include "OSAL_Log.h"
+
+#define NCL_LOG_TAG "NCL_TAG"
+#define NCL_LOG_TAG2 "OSAL_EVENT"
 
 NCL_ERRORTYPE NCL_OSAL_SignalCreate(NCL_HANDLETYPE *eventHandle) {
   NCL_ERRORTYPE ret = NCL_ErrorNone;
@@ -30,7 +34,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalCreate(NCL_HANDLETYPE *eventHandle) {
 
   mutex_ret = NCL_OSAL_MutexCreate(&event->m_mutex);
   if (!mutex_ret) {
-    printf("[NCL_OSAL_SignalCreate]: Mutex create failed - %d\n", mutex_ret);
+    LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalCreate]: Mutex create failed - %d", mutex_ret);
     NCL_OSAL_Free(event);
     ret = NCL_ErrorInsufficientResources;
     goto EXIT;
@@ -38,7 +42,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalCreate(NCL_HANDLETYPE *eventHandle) {
 
   cond_ret = pthread_cond_init(&event->m_condition, NULL);
   if (!cond_ret) {
-    printf("[NCL_OSAL_SignalCreate]: Cond create failed - %d\n", cond_ret);
+    LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalCreate]: Cond create failed - %d", cond_ret);
     NCL_OSAL_MutexTerminate(event->m_mutex);
     NCL_OSAL_Free(event);
     ret = NCL_ErrorInsufficientResources;
@@ -50,7 +54,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalCreate(NCL_HANDLETYPE *eventHandle) {
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_SignalCreate] : ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SignalCreate] : ret %d", ret);
   return ret;
 }
 
@@ -68,7 +72,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalTerminate(NCL_HANDLETYPE eventHandle) {
   condTerminate_ret = pthread_cond_destroy(&event->m_condition);
   if (condTerminate_ret != 0) {
     ret = NCL_ErrorUndefined;
-    printf("[NCL_OSAL_SignalTerminate] - cond destroy failed %d\n",
+    LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalTerminate] - cond destroy failed %d",
            condTerminate_ret);
     NCL_OSAL_Free(event);
     goto EXIT;
@@ -77,7 +81,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalTerminate(NCL_HANDLETYPE eventHandle) {
   mutexTerminate_ret = NCL_OSAL_MutexTerminate(event->m_mutex);
   if (mutexTerminate_ret != 0) {
     ret = NCL_ErrorUndefined;
-    printf("[NCL_OSAL_SignalTerminate] - mutex destroy failed %d\n",
+    LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalTerminate] - mutex destroy failed %d",
            mutexTerminate_ret);
     NCL_OSAL_Free(event);
     goto EXIT;
@@ -86,7 +90,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalTerminate(NCL_HANDLETYPE eventHandle) {
   ret = NCL_ErrorNone;
   goto EXIT;
 EXIT:
-  printf("[NCL_OSAL_SignalTerminate]: ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SignalTerminate]: ret %d", ret);
   return ret;
 }
 
@@ -100,7 +104,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalReset(NCL_HANDLETYPE eventHandle) {
 
   ret = NCL_OSAL_MutexLock(event->m_mutex);
   if (ret != NCL_ErrorNone) {
-    printf("[NCL_OSAL_SignalReset] - mutex lock failed %d\n", ret);
+    LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalReset] - mutex lock failed %d", ret);
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
@@ -112,7 +116,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalReset(NCL_HANDLETYPE eventHandle) {
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_SignalReset] - ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SignalReset] - ret %d", ret);
   return ret;
 }
 
@@ -125,8 +129,8 @@ NCL_ERRORTYPE NCL_OSAL_SignalSet(NCL_HANDLETYPE eventHandle) {
   }
 
   ret = NCL_OSAL_MutexLock(event->m_mutex);
-  if (ret != NCL_ErrorNone) {
-    printf("[NCL_OSAL_SignalSet] - mutex lock failed %d\n", ret);
+  if (ret!= NCL_ErrorNone) {
+    LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalSet] - mutex lock failed %d", ret);
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
@@ -140,7 +144,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalSet(NCL_HANDLETYPE eventHandle) {
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_SignalSet] - ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SignalSet] - ret %d", ret);
   return ret;
 }
 
@@ -164,8 +168,8 @@ NCL_ERRORTYPE NCL_OSAL_SignalWait_ms(NCL_HANDLETYPE eventHandle, NCL_U32 ms) {
   timeout.tv_nsec = (tv_us % 1000000) * 1000;
 
   ret = NCL_OSAL_MutexLock(event->m_mutex);
-  if (ret != NCL_ErrorNone) {
-    printf("[NCL_OSAL_SignalWait_ms] - mutex lock failed %d\n", ret);
+  if (ret!= NCL_ErrorNone) {
+    LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalWait_ms] - mutex lock failed %d", ret);
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
@@ -197,6 +201,6 @@ NCL_ERRORTYPE NCL_OSAL_SignalWait_ms(NCL_HANDLETYPE eventHandle, NCL_U32 ms) {
   goto EXIT;
 
 EXIT:
-  printf("[NCL_OSAL_SignalWait_ms] - ret %d\n", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SignalWait_ms] - ret %d", ret);
   return ret;
 }

@@ -6,6 +6,10 @@
 #include "NCL_Types.h"
 #include "OSAL_Memory.h"
 #include "OSAL_Mutex.h"
+#include "OSAL_Log.h"
+
+#define NCL_LOG_TAG "NCL_TAG"
+#define NCL_LOG_TAG2 "OSAL_MUTEX"
 
 NCL_ERRORTYPE NCL_OSAL_MutexCreate(NCL_HANDLETYPE *mutexHandle) {
   int init_ret = 0;
@@ -35,7 +39,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexCreate(NCL_HANDLETYPE *mutexHandle) {
   return ret;
 
 EXIT:
-  printf("ERROR: [NCL_OSAL_MutexCreate] - %d\n", ret);
+  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexCreate] - %d", ret);
   NCL_OSAL_Free(mutex);
   *mutexHandle = NULL;
   return ret;
@@ -52,14 +56,14 @@ NCL_ERRORTYPE NCL_OSAL_MutexTerminate(NCL_HANDLETYPE mutexHandle) {
 
   pthread_mutex_t *mutex = (pthread_mutex_t *)mutexHandle;
   destroy_ret = pthread_mutex_destroy(mutex);
-  if (destroy_ret != 0) {
+  if (destroy_ret!= 0) {
     ret = NCL_ErrorUndefined;
     goto EXIT;
   }
   NCL_OSAL_Free(mutex);
 
 EXIT:
-  printf("ERROR: [NCL_OSAL_MutexTerminate] - %d\n", ret);
+  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexTerminate] - %d", ret);
   return ret;
 }
 
@@ -81,7 +85,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexLock(NCL_HANDLETYPE mutexHandle) {
 
   return ret;
 EXIT:
-  printf("ERROR: [NCL_OSAL_MutexLock] - %d\n", ret);
+  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexLock] - %d", ret);
   return ret;
 }
 
@@ -96,13 +100,13 @@ NCL_ERRORTYPE NCL_OSAL_MutexUnlock(NCL_HANDLETYPE mutexHandle) {
 
   pthread_mutex_t *mutex = (pthread_mutex_t *)mutexHandle;
   unlock_ret = pthread_mutex_unlock(mutex);
-  if (unlock_ret != 0) {
+  if (unlock_ret!= 0) {
     ret = NCL_ErrorUndefined;
     goto EXIT;
   }
 
   return ret;
 EXIT:
-  printf("ERROR: [NCL_OSAL_MutexUnlock] - %d\n", ret);
+  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexUnlock] - %d", ret);
   return ret;
 }
