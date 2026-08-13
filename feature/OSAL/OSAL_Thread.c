@@ -8,9 +8,9 @@
 
 #include "NCL_Core.h"
 #include "NCL_Types.h"
+#include "OSAL_Log.h"
 #include "OSAL_Memory.h"
 #include "OSAL_Thread.h"
-#include "OSAL_Log.h"
 
 #define NCL_LOG_TAG "NCL_TAG"
 #define NCL_LOG_TAG2 "OSAL_THREAD"
@@ -20,6 +20,7 @@ typedef struct _NCL_THREAD_HANDLE_TYPE {
   pthread_attr_t attr;
   struct sched_param schedparam;
   int stack_size;
+  NCL_THREAD_TYPE detachState;
 } NCL_THREAD_HANDLE_TYPE;
 
 NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
@@ -59,8 +60,9 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
   // pthread_attr_init(&thread->attr);
   init_ret = pthread_attr_init(&thread->attr);
   if (init_ret != 0) {
-    LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_init failed! %d",
-           init_ret);
+    LOGE(NCL_LOG_TAG2,
+         "ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_init failed! %d",
+         init_ret);
     ret = NCL_ErrorUndefined;
     goto FREE_THREAD;
   }
@@ -72,11 +74,13 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
   if (thread->schedparam.sched_priority != 0)
     pthread_attr_setschedparam(&thread->attr, &thread->schedparam);
 
-  detach_ret = pthread_attr_setdetachstate(&thread->attr, detachState);
+  thread->detachState = detachState;
+  detach_ret = pthread_attr_setdetachstate(&thread->attr, thread->detachState);
   if (detach_ret != 0) {
-    LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_setdetachstate "
-           "failed! %d",
-           detach_ret);
+    LOGE(NCL_LOG_TAG2,
+         "ERROR: [NCL_OSAL_ThreadCreate] - pthread_attr_setdetachstate "
+         "failed! %d",
+         detach_ret);
     ret = NCL_ErrorUndefined;
     goto DESTROY_ATTR;
   }
@@ -90,18 +94,19 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
   case 0:
     *thread_handle = (NCL_HANDLETYPE)thread;
     LOGI(NCL_LOG_TAG2, "[NCL_OSAL_ThreadCreate] - thread id %lu is created",
-           thread->pthread);
+         thread->pthread);
     ret = NCL_ErrorNone;
     break;
   case EAGAIN:
     LOGE(NCL_LOG_TAG2,
-        "ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed EAGAIN %d",
-        thread_ret);
+         "ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed EAGAIN %d",
+         thread_ret);
     ret = NCL_ErrorUndefined;
     goto FREE_THREAD;
   default:
-    LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed %d",
-           thread_ret);
+    LOGE(NCL_LOG_TAG2,
+         "ERROR: [NCL_OSAL_ThreadCreate] -  pthread_create failed %d",
+         thread_ret);
     ret = NCL_ErrorUndefined;
     goto FREE_THREAD;
   }
@@ -130,15 +135,17 @@ NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE *thread_handle) {
   if (isDetached == PTHREAD_CREATE_JOINABLE) {
     join_ret = pthread_join(thread->pthread, NULL);
     if (0 != join_ret) {
-      LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_ThreadTerminate] - pthread_join failed %d",
-             join_ret);
+      LOGE(NCL_LOG_TAG2,
+           "ERROR: [NCL_OSAL_ThreadTerminate] - pthread_join failed %d",
+           join_ret);
       ret = NCL_ErrorBadParameter;
       goto EXIT;
     }
   }
   NCL_OSAL_Free(thread);
-  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_ThreadTerminate] thread id %lu join successfully %d",
-         thread->pthread, join_ret);
+  LOGI(NCL_LOG_TAG2,
+       "[NCL_OSAL_ThreadTerminate] thread id %lu join successfully %d",
+       thread->pthread, join_ret);
   ret = NCL_ErrorNone;
 
 EXIT:
