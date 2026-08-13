@@ -4,9 +4,9 @@
 
 #include "NCL_Core.h"
 #include "NCL_Types.h"
+#include "OSAL_Log.h"
 #include "OSAL_Memory.h"
 #include "OSAL_Mutex.h"
-#include "OSAL_Log.h"
 
 #define NCL_LOG_TAG "NCL_TAG"
 #define NCL_LOG_TAG2 "OSAL_MUTEX"
@@ -34,7 +34,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexCreate(NCL_HANDLETYPE *mutexHandle) {
     goto EXIT;
   }
 
-  *mutexHandle = (NCL_HANDLETYPE *)mutex;
+  *mutexHandle = (NCL_HANDLETYPE)mutex;
 
   return ret;
 
@@ -56,7 +56,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexTerminate(NCL_HANDLETYPE mutexHandle) {
 
   pthread_mutex_t *mutex = (pthread_mutex_t *)mutexHandle;
   destroy_ret = pthread_mutex_destroy(mutex);
-  if (destroy_ret!= 0) {
+  if (destroy_ret != 0) {
     ret = NCL_ErrorUndefined;
     goto EXIT;
   }
@@ -100,7 +100,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexUnlock(NCL_HANDLETYPE mutexHandle) {
 
   pthread_mutex_t *mutex = (pthread_mutex_t *)mutexHandle;
   unlock_ret = pthread_mutex_unlock(mutex);
-  if (unlock_ret!= 0) {
+  if (unlock_ret != 0) {
     ret = NCL_ErrorUndefined;
     goto EXIT;
   }
