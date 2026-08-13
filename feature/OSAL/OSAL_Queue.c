@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
 
 #include "NCL_Core.h"
@@ -9,18 +7,6 @@
 #include "OSAL_Mutex.h"
 #include "OSAL_Queue.h"
 
-// typedef struct _NCL_QElem {
-//   void *m_data;
-//   struct _NCL_QElem *m_qNext;
-// } NCL_QElem;
-
-// typedef struct _NCL_QUEUE {
-//   NCL_QElem *m_first;
-//   NCL_QElem *m_last;
-//   NCL_U32 numELem;
-//   NCL_U32 maxNumElem;
-//   NCL_HANDLETYPE m_qMutex;
-// } NCL_QUEUE;
 
 NCL_ERRORTYPE NCL_OSAL_QueueCreate(NCL_HANDLETYPE *queueHandle,
                                    int maxNumElem) {
@@ -28,7 +14,7 @@ NCL_ERRORTYPE NCL_OSAL_QueueCreate(NCL_HANDLETYPE *queueHandle,
   NCL_QUEUE *queue = NULL;    // output
   NCL_QElem *currElem = NULL; // Traveling
   NCL_QElem *newElem = NULL;
-  int qMutex_ret = 0;
+  int qMutex_ret = -1;
 
   if (!queueHandle || maxNumElem <= 0) {
     ret = NCL_ErrorBadParameter;
@@ -53,7 +39,7 @@ NCL_ERRORTYPE NCL_OSAL_QueueCreate(NCL_HANDLETYPE *queueHandle,
   for (int i = 0; i < maxNumElem; i++) {
     newElem = (NCL_QElem *)NCL_OSAL_Malloc(sizeof(NCL_QElem));
     if (!newElem) {
-      printf("[NCL_OSAL_QueueCreate] - Cannot allocate new node for queue\n");
+      printf("[NCL_OSAL_QueueCreate] - Cannot allocate node %d\n", i);
       ret = NCL_ErrorInsufficientResources;
       currElem = queue->m_first;
       while (currElem != NULL) {
@@ -74,6 +60,7 @@ NCL_ERRORTYPE NCL_OSAL_QueueCreate(NCL_HANDLETYPE *queueHandle,
     currElem = newElem;
   }
 
+  currElem->m_qNext = queue->m_first;
   queue->m_last = queue->m_first;
   queue->maxNumElem = maxNumElem;
   queue->numELem = 0;
@@ -119,7 +106,7 @@ EXIT:
 }
 
 NCL_ERRORTYPE NCL_OSAL_Enqueue(NCL_HANDLETYPE queueHandle,
-                             NCL_IN const NCL_PTR data) {
+                               NCL_IN const NCL_PTR data) {
   NCL_ERRORTYPE ret = NCL_ErrorNone;
   NCL_QUEUE *queue = (NCL_QUEUE *)queueHandle;
 
@@ -165,7 +152,7 @@ NCL_ERRORTYPE NCL_OSAL_Dequeue(NCL_HANDLETYPE queueHandle,
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
-  if (queue->m_first == NULL|| queue->numELem == 0) {
+  if (queue->m_first == NULL || queue->numELem == 0) {
     printf("[NCL_OSAL_Dequeue]: cannot dequeue anymore, queue is empty!\n");
     ret = NCL_ErrorUndefined;
     *data = NULL;
