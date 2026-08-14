@@ -51,7 +51,7 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
 
   thread =
       (NCL_THREAD_HANDLE_TYPE *)NCL_OSAL_Malloc(sizeof(NCL_THREAD_HANDLE_TYPE));
-  if (thread == NULL) {
+  if (!thread) {
     ret = NCL_ErrorInsufficientResources;
     goto EXIT;
   }

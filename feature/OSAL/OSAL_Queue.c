@@ -139,7 +139,7 @@ NCL_ERRORTYPE NCL_OSAL_Enqueue(NCL_HANDLETYPE queueHandle,
 
   NCL_OSAL_MutexUnlock(&queue->m_qMutex);
 EXIT:
-  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_Queue] - ret %d", ret);
+  LOGD(NCL_LOG_TAG2, "[NCL_OSAL_Queue] - ret %d", ret);
   return ret;
 }
 
@@ -174,7 +174,7 @@ NCL_ERRORTYPE NCL_OSAL_Dequeue(NCL_HANDLETYPE queueHandle,
   queue->numElem--;
   NCL_OSAL_MutexUnlock(&queue->m_qMutex);
 EXIT:
-  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_Dequeue] - ret %d", ret);
+  LOGD(NCL_LOG_TAG2, "[NCL_OSAL_Dequeue] - ret %d", ret);
   return ret;
 }
 

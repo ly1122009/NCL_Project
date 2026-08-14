@@ -33,7 +33,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalCreate(NCL_HANDLETYPE *eventHandle) {
   event->m_signal = NCL_FALSE;
 
   mutex_ret = NCL_OSAL_MutexCreate(&event->m_mutex);
-  if (!mutex_ret) {
+  if (mutex_ret != NCL_ErrorNone) {
     LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalCreate]: Mutex create failed - %d", mutex_ret);
     NCL_OSAL_Free(event);
     ret = NCL_ErrorInsufficientResources;
@@ -41,7 +41,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalCreate(NCL_HANDLETYPE *eventHandle) {
   }
 
   cond_ret = pthread_cond_init(&event->m_condition, NULL);
-  if (!cond_ret) {
+  if (cond_ret) {
     LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalCreate]: Cond create failed - %d", cond_ret);
     NCL_OSAL_MutexTerminate(event->m_mutex);
     NCL_OSAL_Free(event);
