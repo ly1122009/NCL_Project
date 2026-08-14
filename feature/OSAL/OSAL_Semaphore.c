@@ -30,7 +30,7 @@ NCL_ERRORTYPE NCL_OSAL_SemaphoreCreate(NCL_HANDLETYPE *semaphoreHandle) {
   *semaphoreHandle = (NCL_HANDLETYPE)semaphore;
 
 EXIT:
-  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_SemaphoreCreate] - %d", ret);
+  LOGI(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_SemaphoreCreate] - %d", ret);
   return ret;
 }
 

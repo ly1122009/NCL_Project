@@ -39,7 +39,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexCreate(NCL_HANDLETYPE *mutexHandle) {
   return ret;
 
 EXIT:
-  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexCreate] - %d", ret);
+  LOGI(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexCreate] - %d", ret);
   NCL_OSAL_Free(mutex);
   *mutexHandle = NULL;
   return ret;
@@ -63,7 +63,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexTerminate(NCL_HANDLETYPE mutexHandle) {
   NCL_OSAL_Free(mutex);
 
 EXIT:
-  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexTerminate] - %d", ret);
+  LOGI(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexTerminate] - %d", ret);
   return ret;
 }
 
@@ -85,7 +85,7 @@ NCL_ERRORTYPE NCL_OSAL_MutexLock(NCL_HANDLETYPE mutexHandle) {
 
   return ret;
 EXIT:
-  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexLock] - %d", ret);
+  LOGI(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexLock] - %d", ret);
   return ret;
 }
 
@@ -107,6 +107,6 @@ NCL_ERRORTYPE NCL_OSAL_MutexUnlock(NCL_HANDLETYPE mutexHandle) {
 
   return ret;
 EXIT:
-  LOGE(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexUnlock] - %d", ret);
+  LOGI(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexUnlock] - %d", ret);
   return ret;
 }
