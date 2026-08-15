@@ -1,5 +1,5 @@
 #include <asm-generic/errno.h>
-#include <bits/pthread_types.h>
+// #include <bits/pthread_types.h>  // For termuxer
 #include <pthread.h>
 #include <stdio.h>
 #include <sys/time.h>
