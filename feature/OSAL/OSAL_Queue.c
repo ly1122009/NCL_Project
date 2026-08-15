@@ -1,4 +1,5 @@
 #include <sys/types.h>
+#include <stdio.h>
 
 #include "NCL_Core.h"
 #include "NCL_Types.h"
@@ -44,12 +45,12 @@ NCL_ERRORTYPE NCL_OSAL_QueueCreate(NCL_HANDLETYPE *queueHandle,
       LOGE(NCL_LOG_TAG2, "[NCL_OSAL_QueueCreate] - Cannot allocate node %d", i);
       ret = NCL_ErrorInsufficientResources;
       currElem = queue->m_first;
-      while (currElem != NULL) {
-        NCL_QElem *temp = currElem;
-        currElem = currElem->m_qNext;
-        NCL_OSAL_Free(temp);
+      for (int j = 0; j < i; j++) {
+          NCL_QElem *temp = currElem;
+          currElem = currElem->m_qNext;
+          NCL_OSAL_Free(temp);
       }
-      NCL_OSAL_MutexTerminate(&queue->m_qMutex);
+      NCL_OSAL_MutexTerminate(queue->m_qMutex);
       NCL_OSAL_Free(queue);
       goto EXIT;
     }
@@ -83,21 +84,22 @@ NCL_ERRORTYPE NCL_OSAL_QueueTerminate(NCL_HANDLETYPE queueHandle) {
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
-  NCL_OSAL_MutexLock(&queue->m_qMutex);
+  NCL_OSAL_MutexLock(queue->m_qMutex);
   if (!queue->m_first) {
     ret = NCL_ErrorBadParameter;
-    NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+    NCL_OSAL_MutexUnlock(queue->m_qMutex);
     goto EXIT;
   }
 
   currElem = queue->m_first;
-  while (currElem) {
-    NCL_QElem *temp = currElem;
-    currElem = currElem->m_qNext;
-    NCL_OSAL_Free(temp);
+  for (NCL_U32 i = 0; i < queue->maxNumElem; i++) {
+      NCL_QElem *temp = currElem;
+      currElem = currElem->m_qNext;
+      NCL_OSAL_Free(temp);
   }
-  NCL_OSAL_MutexUnlock(&queue->m_qMutex);
-  NCL_OSAL_MutexTerminate(&queue->m_qMutex);
+
+  NCL_OSAL_MutexUnlock(queue->m_qMutex);
+  NCL_OSAL_MutexTerminate(queue->m_qMutex);
   NCL_OSAL_Free(queue);
 
   ret = NCL_ErrorNone;
@@ -118,10 +120,10 @@ NCL_ERRORTYPE NCL_OSAL_Enqueue(NCL_HANDLETYPE queueHandle,
     goto EXIT;
   }
 
-  NCL_OSAL_MutexLock(&queue->m_qMutex);
+  NCL_OSAL_MutexLock(queue->m_qMutex);
   if (!queue->m_first) {
     ret = NCL_ErrorBadParameter;
-    NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+    NCL_OSAL_MutexUnlock(queue->m_qMutex);
     goto EXIT;
   }
 
@@ -129,7 +131,7 @@ NCL_ERRORTYPE NCL_OSAL_Enqueue(NCL_HANDLETYPE queueHandle,
     LOGE(NCL_LOG_TAG2,
          "[NCL_OSAL_Queue]: cannot enqueue anymore, queue is full!");
     ret = NCL_ErrorUndefined;
-    NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+    NCL_OSAL_MutexUnlock(queue->m_qMutex);
     goto EXIT;
   }
 
@@ -137,7 +139,7 @@ NCL_ERRORTYPE NCL_OSAL_Enqueue(NCL_HANDLETYPE queueHandle,
   queue->m_last = queue->m_last->m_qNext;
   queue->numElem++;
 
-  NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+  NCL_OSAL_MutexUnlock(queue->m_qMutex);
 EXIT:
   LOGD(NCL_LOG_TAG2, "[NCL_OSAL_Queue] - ret %d", ret);
   return ret;
@@ -152,10 +154,10 @@ NCL_ERRORTYPE NCL_OSAL_Dequeue(NCL_HANDLETYPE queueHandle,
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
-  NCL_OSAL_MutexLock(&queue->m_qMutex);
+  NCL_OSAL_MutexLock(queue->m_qMutex);
   if (!queue->m_first) {
     ret = NCL_ErrorBadParameter;
-    NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+    NCL_OSAL_MutexUnlock(queue->m_qMutex);
     goto EXIT;
   }
 
@@ -164,7 +166,7 @@ NCL_ERRORTYPE NCL_OSAL_Dequeue(NCL_HANDLETYPE queueHandle,
          "[NCL_OSAL_Dequeue]: cannot dequeue anymore, queue is empty!");
     ret = NCL_ErrorUndefined;
     *data = NULL;
-    NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+    NCL_OSAL_MutexUnlock(queue->m_qMutex);
     goto EXIT;
   }
 
@@ -172,7 +174,7 @@ NCL_ERRORTYPE NCL_OSAL_Dequeue(NCL_HANDLETYPE queueHandle,
   queue->m_first->m_data = NULL;
   queue->m_first = queue->m_first->m_qNext;
   queue->numElem--;
-  NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+  NCL_OSAL_MutexUnlock(queue->m_qMutex);
 EXIT:
   LOGD(NCL_LOG_TAG2, "[NCL_OSAL_Dequeue] - ret %d", ret);
   return ret;
@@ -186,15 +188,15 @@ NCL_ERRORTYPE NCL_OSAL_Queue_Set_numElem(NCL_HANDLETYPE queueHandle,
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
-  NCL_OSAL_MutexLock(&queue->m_qMutex);
+  NCL_OSAL_MutexLock(queue->m_qMutex);
   if (!queue->m_first) {
     ret = NCL_ErrorBadParameter;
-    NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+    NCL_OSAL_MutexUnlock(queue->m_qMutex);
     goto EXIT;
   }
 
   queue->numElem = data;
-  NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+  NCL_OSAL_MutexUnlock(queue->m_qMutex);
   ret = NCL_ErrorNone;
   goto EXIT;
 
@@ -211,15 +213,15 @@ NCL_ERRORTYPE NCL_OSAL_Queue_Get_numElem(NCL_HANDLETYPE queueHandle,
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
-  NCL_OSAL_MutexLock(&queue->m_qMutex);
+  NCL_OSAL_MutexLock(queue->m_qMutex);
   if (!queue->m_first) {
     ret = NCL_ErrorBadParameter;
-    NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+    NCL_OSAL_MutexUnlock(queue->m_qMutex);
     goto EXIT;
   }
 
   *data = queue->numElem;
-  NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+  NCL_OSAL_MutexUnlock(queue->m_qMutex);
   ret = NCL_ErrorNone;
   goto EXIT;
 
@@ -237,10 +239,10 @@ NCL_ERRORTYPE NCL_OSAL_QueueReset(NCL_HANDLETYPE queueHandle) {
     goto EXIT;
   }
 
-  NCL_OSAL_MutexLock(&queue->m_qMutex);
+  NCL_OSAL_MutexLock(queue->m_qMutex);
   if (!queue->m_first) {
     ret = NCL_ErrorBadParameter;
-    NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+    NCL_OSAL_MutexUnlock(queue->m_qMutex);
     goto EXIT;
   }
 
@@ -252,7 +254,7 @@ NCL_ERRORTYPE NCL_OSAL_QueueReset(NCL_HANDLETYPE queueHandle) {
   queue->m_last = queue->m_first;
   queue->numElem = 0;
 
-  NCL_OSAL_MutexUnlock(&queue->m_qMutex);
+  NCL_OSAL_MutexUnlock(queue->m_qMutex);
   ret = NCL_ErrorNone;
   goto EXIT;
 
