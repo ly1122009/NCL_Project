@@ -1,4 +1,4 @@
-#include <bits/pthread_types.h>
+// #include <bits/pthread_types.h> // For termuxer
 #include <pthread.h>
 #include <stdio.h>
 
