@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.15)
-project(NCL_Project LANGUAGES C)
+project(NCL_Project LANGUAGES C CXX)
 
-# Set C standards
+# Set C/C++ standards
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+find_package(Threads REQUIRED)
 
-# Source files
-set(SOURCES
-    main.c
+set(NCL_OSAL_SOURCES
     feature/core/src/Math.c
     feature/OSAL/OSAL_Memory.c
     feature/OSAL/OSAL_Thread.c
@@ -21,22 +22,26 @@ set(SOURCES
     feature/OSAL/OSAL_Semaphore.c
 )
 
-# Executable
-add_executable(ncl_app ${SOURCES})
+add_library(ncl_osal STATIC ${NCL_OSAL_SOURCES})
 
-# Add tests subdirectory
-add_subdirectory(tests)
-
-# Include directories (Modern CMake approach)
-target_include_directories(ncl_app PRIVATE
+target_include_directories(ncl_osal PUBLIC
     feature/core/inc
     feature/OSAL
     interface
 )
 
-# Add compiler warnings for better development experience
+target_link_libraries(ncl_osal PUBLIC Threads::Threads ${CMAKE_DL_LIBS})
+
 if(MSVC)
-    target_compile_options(ncl_app PRIVATE /W4)
+    target_compile_options(ncl_osal PRIVATE /W4)
 else()
-    target_compile_options(ncl_app PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(ncl_osal PRIVATE -Wall -Wextra -Wpedantic)
 endif()
+
+# Executable
+add_executable(ncl_app main.c)
+target_link_libraries(ncl_app PRIVATE ncl_osal)
+
+# Tests
+enable_testing()
+add_subdirectory(tests)
