@@ -20,6 +20,10 @@ NCL_ERRORTYPE NCL_OSAL_SemaphoreCreate(NCL_HANDLETYPE *semaphoreHandle) {
   }
   sem_t *semaphore;
   semaphore = (sem_t *)NCL_OSAL_Malloc(sizeof(sem_t));
+  if (!semaphore) {
+    ret = NCL_ErrorBadParameter;
+    goto EXIT;
+  }
   sem_ret = sem_init(semaphore, 0, 0);
   if (sem_ret != 0) {
     NCL_OSAL_Free(semaphore);
