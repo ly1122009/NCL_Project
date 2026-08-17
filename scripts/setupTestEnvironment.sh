@@ -1,68 +1,130 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Dừng script ngay nếu có lỗi
 set -e
 
-echo "=== [1/4] Phát hiện môi trường & Cài đặt công cụ ==="
+echo "=========================================="
+echo "       GoogleTest Setup"
+echo "=========================================="
 
-# Kiểm tra nếu là Termux
-if [ -d "/data/data/com.termux/files/usr" ]; then
-    ENV_TYPE="TERMUX"
-    echo "--> Môi trường: Termux"
-    pkg update -y
-    pkg install -y cmake clang git make
-    PREFIX_PATH="$PREFIX"
-    SUDO=""
-else
-    ENV_TYPE="LINUX/WSL2"
-    echo "--> Môi trường: WSL2 / Linux"
-    
-    # Kiểm tra sudo
-    if [ "$(id -u)" -eq 0 ]; then
-        SUDO=""
+# --------------------------------------------------
+# Configuration
+# --------------------------------------------------
+
+GTEST_VERSION="v1.17.0"
+INSTALL_DIR="/opt/googletest"
+
+# --------------------------------------------------
+# Check dependencies
+# --------------------------------------------------
+
+echo "[1/5] Checking dependencies..."
+
+command -v git >/dev/null 2>&1 || {
+    echo "ERROR: git is not installed."
+    exit 1
+}
+
+command -v cmake >/dev/null 2>&1 || {
+    echo "ERROR: cmake is not installed."
+    exit 1
+}
+
+command -v g++ >/dev/null 2>&1 || {
+    echo "ERROR: g++ is not installed."
+    exit 1
+}
+
+# --------------------------------------------------
+# Clone GoogleTest
+# --------------------------------------------------
+
+echo "[2/5] Downloading GoogleTest ${GTEST_VERSION}..."
+
+if [ -d "$INSTALL_DIR" ]; then
+    echo "GoogleTest directory already exists:"
+    echo "  $INSTALL_DIR"
+
+    read -r -p "Remove and reinstall? [y/N] " answer
+
+    if [[ "$answer" =~ ^[Yy]$ ]]; then
+        sudo rm -rf "$INSTALL_DIR"
     else
-        SUDO="sudo"
+        echo "Using existing installation."
     fi
-
-    # Cài đặt package theo distro
-    if command -v apt-get &> /dev/null; then
-        $SUDO apt-get update
-        $SUDO apt-get install -y build-essential cmake git
-    elif command -v dnf &> /dev/null; then
-        $SUDO dnf groupinstall -y "Development Tools"
-        $SUDO dnf install -y cmake git gcc-c++
-    elif command -v pacman &> /dev/null; then
-        $SUDO pacman -Sy --noconfirm base-devel cmake git
-    fi
-    PREFIX_PATH="/usr/local"
 fi
 
-WORK_DIR="/tmp/gtest_build"
-# Tải vào $HOME nếu /tmp không khả dụng (đặc trưng một số bản Termux)
-[ "$ENV_TYPE" = "TERMUX" ] && WORK_DIR="$HOME/gtest_build"
+if [ ! -d "$INSTALL_DIR" ]; then
+    sudo git clone \
+        --depth 1 \
+        --branch "$GTEST_VERSION" \
+        https://github.com/google/googletest.git \
+        "$INSTALL_DIR"
+fi
 
-echo "=== [2/4] Tải source code Google Test ==="
-rm -rf "$WORK_DIR"
-git clone https://github.com/google/googletest.git "$WORK_DIR"
+# --------------------------------------------------
+# Build
+# --------------------------------------------------
 
-echo "=== [3/4] Biên dịch và cài đặt ==="
-cd "$WORK_DIR"
-mkdir build && cd build
+echo "[3/5] Building GoogleTest..."
 
-# Cấu hình CMake với tiền tố cài đặt phù hợp
-cmake .. -DCMAKE_INSTALL_PREFIX="$PREFIX_PATH"
+sudo rm -rf "$INSTALL_DIR/build"
 
-# Lấy số nhân CPU để biên dịch nhanh
-NPROC=$(nproc 2>/dev/null || echo 2)
-make -j"$NPROC"
+sudo cmake \
+    -S "$INSTALL_DIR" \
+    -B "$INSTALL_DIR/build" \
+    -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_GMOCK=ON \
+    -DINSTALL_GTEST=ON
 
-# Cài đặt vào hệ thống
-$SUDO make install
+sudo cmake \
+    --build "$INSTALL_DIR/build"
 
-echo "=== [4/4] Dọn dẹp ==="
-rm -rf "$WORK_DIR"
+# --------------------------------------------------
+# Install
+# --------------------------------------------------
 
+echo "[4/5] Installing GoogleTest..."
+
+sudo cmake \
+    --install "$INSTALL_DIR/build"
+
+# --------------------------------------------------
+# Verify
+# --------------------------------------------------
+
+echo "[5/5] Verifying installation..."
+
+echo ""
+echo "GoogleTest files:"
+ls -l /usr/local/lib/ 2>/dev/null | grep -E 'gtest|gmock' || true
+
+echo ""
+echo "CMake package:"
+find /usr/local/lib/cmake \
+    -maxdepth 2 \
+    -type d \
+    \( -name "GTest" -o -name "GTest*" \) \
+    2>/dev/null || true
+
+echo ""
 echo "=========================================="
-echo " SUCCESS: Google Test đã cài thành công!"
-echo " Môi trường: $ENV_TYPE"
+echo "       GoogleTest setup complete"
+echo "=========================================="
+
+echo ""
+echo "Version:"
+grep -E 'GOOGLETEST_VERSION' \
+    "$INSTALL_DIR/CMakeLists.txt" \
+    2>/dev/null || true
+
+echo ""
+echo "Installed to:"
+echo "  $INSTALL_DIR"
+
+echo ""
+echo "CMake can now use:"
+echo ""
+echo "  find_package(GTest CONFIG REQUIRED)"
+echo ""
 echo "=========================================="

@@ -1,98 +1,120 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Dừng ngay nếu có lỗi
 set -e
 
-echo "========================================================="
-echo "   SETUP ENVIRONMENT FOR EMBEDDED LINUX (C/C++)          "
-echo "========================================================="
+echo "=========================================="
+echo "   Ubuntu C/C++ Development Environment"
+echo "=========================================="
 
-# 1. Nhận diện môi trường
-IS_TERMUX=false
-if [ -d "/data/data/com.termux/files/usr" ]; then
-    IS_TERMUX=true
-    echo "[+] Phát hiện môi trường: Termux (Android)"
-    SUDO=""
-else
-    echo "[+] Phát hiện môi trường: WSL2 / Linux Standard"
-    if [ "$(id -u)" -ne 0 ]; then
-        SUDO="sudo"
-    else
-        SUDO=""
-    fi
+# --------------------------------------------------
+# Check OS
+# --------------------------------------------------
+
+if [ ! -f /etc/os-release ]; then
+    echo "ERROR: /etc/os-release not found."
+    exit 1
 fi
 
-# 2. Cài đặt trên Termux
-if [ "$IS_TERMUX" = true ]; then
-    echo "[+] Đang cập nhật gói và cài đặt công cụ cho Termux..."
-    pkg update -y && pkg upgrade -y
-    
-    # Toolchain cơ bản
-    pkg install -y clang make cmake ninja pkg-config git gdb \
-                   libusb libftdi openocd minicom python-pip
+. /etc/os-release
 
-    echo "---------------------------------------------------------"
-    echo "LƯU Ý TERMUX:"
-    echo " - Cross-compiler (arm-linux-gnueabi) không hỗ trợ sẵn qua 'pkg'."
-    echo " - Bạn nên biên dịch trực tiếp (native) hoặc dùng Clang target:"
-    echo "   VD: clang++ --target=aarch64-linux-gnu ..."
-    echo "---------------------------------------------------------"
-
-# 3. Cài đặt trên WSL2 / Debian / Ubuntu
-else
-    echo "[+] Đang cập nhật hệ thống và cài đặt cho WSL2/Linux..."
-    $SUDO apt-get update -y
-    $SUDO apt-get upgrade -y
-
-    echo "[+] 1. Cài đặt Build Tools cơ bản..."
-    $SUDO apt-get install -y \
-        build-essential \
-        cmake \
-        ninja-build \
-        git \
-        pkg-config \
-        autoconf \
-        automake \
-        libtool \
-        ccache
-
-    echo "[+] 2. Cài đặt Cross-Compiler (ARM32 & ARM64)..."
-    $SUDO apt-get install -y \
-        gcc-arm-linux-gnueabihf \
-        g++-arm-linux-gnueabihf \
-        gcc-aarch64-linux-gnu \
-        g++-aarch64-linux-gnu
-
-    echo "[+] 3. Cài đặt dependencies để build Kernel / U-Boot / Yocto / Buildroot..."
-    $SUDO apt-get install -y \
-        bison \
-        flex \
-        libncurses5-dev \
-        libncursesw5-dev \
-        libssl-dev \
-        bc \
-        rsync \
-        cpio \
-        unzip \
-        u-boot-tools \
-        lzop \
-        device-tree-compiler
-
-    echo "[+] 4. Cài đặt công cụ Debug & Giả lập (QEMU, GDB, OpenOCD)..."
-    $SUDO apt-get install -y \
-        gdb-multiarch \
-        qemu-system-arm \
-        qemu-system-x86 \
-        qemu-user-static \
-        openocd \
-        minicom \
-        screen \
-        net-tools \
-        iproute2 \
-        libgpiod-dev \
-        gpiod
+if [ "$ID" != "ubuntu" ]; then
+    echo "ERROR: This script requires Ubuntu."
+    exit 1
 fi
 
-echo "========================================================="
-echo " SUCCESS: Môi trường Embedded Linux C/C++ đã sẵn sàng!   "
-echo "========================================================="
+echo "OS      : $PRETTY_NAME"
+echo "Arch    : $(dpkg --print-architecture)"
+echo "Kernel  : $(uname -r)"
+echo ""
+
+# --------------------------------------------------
+# Fix package manager
+# --------------------------------------------------
+
+echo "[1/4] Checking package manager..."
+
+ dpkg --configure -a
+ apt --fix-broken install -y
+ apt update
+
+# --------------------------------------------------
+# Core C/C++ development
+# --------------------------------------------------
+
+echo "[2/4] Installing C/C++ toolchain..."
+
+ apt install -y \
+    build-essential \
+    gcc \
+    g++ \
+    clang \
+    cmake \
+    ninja-build \
+    pkg-config
+
+# --------------------------------------------------
+# Development tools
+# --------------------------------------------------
+
+echo "[3/4] Installing development tools..."
+
+ apt install -y \
+    git \
+    openssh-client \
+    clang-format \
+    clang-tidy \
+    gdb \
+    valgrind \
+    doxygen
+
+# --------------------------------------------------
+# Verification
+# --------------------------------------------------
+
+echo ""
+echo "[4/4] Verifying installation..."
+echo ""
+
+printf "%-15s " "GCC:"
+gcc --version | head -n 1
+
+printf "%-15s " "G++:"
+g++ --version | head -n 1
+
+printf "%-15s " "Clang:"
+clang --version | head -n 1
+
+printf "%-15s " "CMake:"
+cmake --version | head -n 1
+
+printf "%-15s " "Ninja:"
+ninja --version
+
+printf "%-15s " "Make:"
+make --version | head -n 1
+
+printf "%-15s " "Git:"
+git --version
+
+printf "%-15s " "Clang-format:"
+clang-format --version
+
+printf "%-15s " "Clang-tidy:"
+clang-tidy --version | head -n 1
+
+printf "%-15s " "GDB:"
+gdb --version | head -n 1
+
+printf "%-15s " "Valgrind:"
+valgrind --version
+
+printf "%-15s " "Doxygen:"
+doxygen --version
+
+printf "%-15s " "Pkg-config:"
+pkg-config --version
+
+echo ""
+echo "=========================================="
+echo "   C/C++ environment ready!"
+echo "=========================================="
