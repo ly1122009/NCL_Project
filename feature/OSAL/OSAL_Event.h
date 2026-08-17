@@ -21,7 +21,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalCreate(NCL_HANDLETYPE *eventHandle);
 NCL_ERRORTYPE NCL_OSAL_SignalTerminate(NCL_HANDLETYPE eventHandle);
 NCL_ERRORTYPE NCL_OSAL_SignalReset(NCL_HANDLETYPE eventHandle);
 NCL_ERRORTYPE NCL_OSAL_SignalSet(NCL_HANDLETYPE eventHandle);
-NCL_ERRORTYPE NCL_OSAL_SignalWait_ms(NCL_HANDLETYPE eventHandle, NCL_U32 ms);
+NCL_ERRORTYPE NCL_OSAL_SignalWait(NCL_HANDLETYPE eventHandle, NCL_U32 ms);
 
 #ifdef __cplusplus
 }

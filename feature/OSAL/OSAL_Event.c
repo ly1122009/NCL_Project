@@ -30,6 +30,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalCreate(NCL_HANDLETYPE *eventHandle) {
     ret = NCL_ErrorInsufficientResources;
     goto EXIT;
   }
+  NCL_OSAL_Memset(event, 0, sizeof(NCL_OSAL_THREADEVENT));
   event->m_signal = NCL_FALSE;
 
   mutex_ret = NCL_OSAL_MutexCreate(&event->m_mutex);
@@ -69,14 +70,19 @@ NCL_ERRORTYPE NCL_OSAL_SignalTerminate(NCL_HANDLETYPE eventHandle) {
     goto EXIT;
   }
 
+  ret = NCL_OSAL_MutexLock(event->m_mutex);
+
   condTerminate_ret = pthread_cond_destroy(&event->m_condition);
   if (condTerminate_ret != 0) {
     ret = NCL_ErrorUndefined;
     LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalTerminate] - cond destroy failed %d",
            condTerminate_ret);
+    NCL_OSAL_MutexUnlock(event->m_mutex);
     NCL_OSAL_Free(event);
     goto EXIT;
   }
+
+  ret = NCL_OSAL_MutexUnlock(event->m_mutex);
 
   mutexTerminate_ret = NCL_OSAL_MutexTerminate(event->m_mutex);
   if (mutexTerminate_ret != 0) {
@@ -86,8 +92,9 @@ NCL_ERRORTYPE NCL_OSAL_SignalTerminate(NCL_HANDLETYPE eventHandle) {
     NCL_OSAL_Free(event);
     goto EXIT;
   }
-
+ 
   ret = NCL_ErrorNone;
+  NCL_OSAL_Free(event);
   goto EXIT;
 EXIT:
   LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SignalTerminate]: ret %d", ret);
@@ -148,7 +155,7 @@ EXIT:
   return ret;
 }
 
-NCL_ERRORTYPE NCL_OSAL_SignalWait_ms(NCL_HANDLETYPE eventHandle, NCL_U32 ms) {
+NCL_ERRORTYPE NCL_OSAL_SignalWait(NCL_HANDLETYPE eventHandle, NCL_U32 ms) {
   NCL_ERRORTYPE ret = NCL_ErrorNone;
   NCL_OSAL_THREADEVENT *event = (NCL_OSAL_THREADEVENT *)eventHandle;
   struct timespec timeout;
@@ -169,7 +176,7 @@ NCL_ERRORTYPE NCL_OSAL_SignalWait_ms(NCL_HANDLETYPE eventHandle, NCL_U32 ms) {
 
   ret = NCL_OSAL_MutexLock(event->m_mutex);
   if (ret!= NCL_ErrorNone) {
-    LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalWait_ms] - mutex lock failed %d", ret);
+    LOGE(NCL_LOG_TAG2, "[NCL_OSAL_SignalWait] - mutex lock failed %d", ret);
     ret = NCL_ErrorBadParameter;
     goto EXIT;
   }
@@ -177,20 +184,23 @@ NCL_ERRORTYPE NCL_OSAL_SignalWait_ms(NCL_HANDLETYPE eventHandle, NCL_U32 ms) {
   if (ms == 0) {
     if (!event->m_signal) {
       ret = NCL_ErrorTimeout;
+      NCL_OSAL_MutexUnlock(event->m_mutex);
       goto EXIT;
     }
   } else if (ms == MAX_WAIT_TIME) {
-    while (!event->m_signal) {
-      pthread_cond_wait(&event->m_condition, (pthread_mutex_t *)event->m_mutex);
-    }
-    ret = NCL_ErrorNone;
-    goto EXIT;
+      while (!event->m_signal) {
+        pthread_cond_wait(&event->m_condition, (pthread_mutex_t *)event->m_mutex);
+      }
+      ret = NCL_ErrorNone;
+      NCL_OSAL_MutexUnlock(event->m_mutex);
+      goto EXIT;
   } else {
     while (!event->m_signal) {
       timeWait_ret = pthread_cond_timedwait(
           &event->m_condition, (pthread_mutex_t *)event->m_mutex, &timeout);
       if (!event->m_signal && timeWait_ret == ETIMEDOUT) {
         ret = NCL_ErrorTimeout;
+        NCL_OSAL_MutexUnlock(event->m_mutex);
         goto EXIT;
       }
     }
@@ -201,6 +211,6 @@ NCL_ERRORTYPE NCL_OSAL_SignalWait_ms(NCL_HANDLETYPE eventHandle, NCL_U32 ms) {
   goto EXIT;
 
 EXIT:
-  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SignalWait_ms] - ret %d", ret);
+  LOGI(NCL_LOG_TAG2, "[NCL_OSAL_SignalWait] - ret %d", ret);
   return ret;
 }
