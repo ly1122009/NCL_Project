@@ -141,10 +141,11 @@ NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE thread_handle) {
       goto EXIT;
     }
   }
-  NCL_OSAL_Free(thread);
+
   LOGI(NCL_LOG_TAG2,
        "[NCL_OSAL_ThreadTerminate] thread id %lu join successfully %d",
        thread->pthread, join_ret);
+  NCL_OSAL_Free(thread);
   ret = NCL_ErrorNone;
 
 EXIT:
