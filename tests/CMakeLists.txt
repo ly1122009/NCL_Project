@@ -11,6 +11,8 @@ FetchContent_MakeAvailable(googletest)
 add_executable(ncl_osal_tests
     test_osal_queue.cpp
     test_osal_event.cpp
+    test_osal_mutex.cpp
+    test_osal_thread.cpp
 )
 
 target_link_libraries(ncl_osal_tests PRIVATE ncl_osal GTest::gtest_main)

@@ -25,23 +25,23 @@ NCL_ERRORTYPE NCL_OSAL_MutexCreate(NCL_HANDLETYPE *mutexHandle) {
   mutex = (pthread_mutex_t *)NCL_OSAL_Malloc(sizeof(pthread_mutex_t));
   if (!mutex) {
     ret = NCL_ErrorInsufficientResources;
+    *mutexHandle = NULL;
     goto EXIT;
   }
 
   init_ret = pthread_mutex_init(mutex, NULL);
   if (init_ret != 0) {
     ret = NCL_ErrorUndefined;
+    NCL_OSAL_Free(mutex);
+    *mutexHandle = NULL;
     goto EXIT;
   }
 
   *mutexHandle = (NCL_HANDLETYPE)mutex;
-
   return ret;
 
 EXIT:
   LOGI(NCL_LOG_TAG2, "ERROR: [NCL_OSAL_MutexCreate] - %d", ret);
-  NCL_OSAL_Free(mutex);
-  *mutexHandle = NULL;
   return ret;
 }
 

@@ -111,7 +111,7 @@ NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
     goto FREE_THREAD;
   }
 
-  return ret;
+  goto EXIT;
 
 DESTROY_ATTR:
   pthread_attr_destroy(&thread->attr);
@@ -122,7 +122,7 @@ EXIT:
   return ret;
 }
 
-NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE *thread_handle) {
+NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE thread_handle) {
   NCL_ERRORTYPE ret = NCL_ErrorNone;
   int join_ret = 0;
   NCL_THREAD_HANDLE_TYPE *thread = (NCL_THREAD_HANDLE_TYPE *)thread_handle;
@@ -151,6 +151,7 @@ EXIT:
   LOGI(NCL_LOG_TAG2, "[NCL_OSAL_ThreadTerminate] out - ret: %d", ret);
   return ret;
 }
+
 
 void NCL_OSAL_ThreadExit(void *value_ptr) {
   pthread_exit(value_ptr);

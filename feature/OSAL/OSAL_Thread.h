@@ -13,7 +13,7 @@ extern "C" {
 NCL_ERRORTYPE NCL_OSAL_ThreadCreate(NCL_HANDLETYPE *thread_handle,
                                     NCL_PTR func_name, NCL_PTR param,
                                     NCL_THREAD_TYPE thread_type);
-NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE *thread_handle);
+NCL_ERRORTYPE NCL_OSAL_ThreadTerminate(NCL_HANDLETYPE thread_handle);
 void NCL_OSAL_ThreadExit(void *value_ptr);
 void NCL_OSAL_SleepMillisec(NCL_S32 ms);
 
