@@ -43,7 +43,10 @@ add_executable(ncl_app main.c)
 target_link_libraries(ncl_app PRIVATE ncl_osal)
 
 # V4L2 capture module
-add_library(ncl_v4l2 STATIC feature/V4L2/V4L2_Device.c)
+add_library(ncl_v4l2 STATIC
+    feature/V4L2/V4L2_Device.c
+    feature/V4L2/V4L2_CaptureThread.c
+)
 
 target_include_directories(ncl_v4l2 PUBLIC
     feature/V4L2
@@ -59,6 +62,9 @@ endif()
 
 add_executable(v4l2_capture_demo v4l2_capture_demo.c)
 target_link_libraries(v4l2_capture_demo PRIVATE ncl_v4l2)
+
+add_executable(v4l2_capture_threaded_demo v4l2_capture_threaded_demo.c)
+target_link_libraries(v4l2_capture_threaded_demo PRIVATE ncl_v4l2)
 
 # Tests
 enable_testing()
