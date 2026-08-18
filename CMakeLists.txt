@@ -42,6 +42,24 @@ endif()
 add_executable(ncl_app main.c)
 target_link_libraries(ncl_app PRIVATE ncl_osal)
 
+# V4L2 capture module
+add_library(ncl_v4l2 STATIC feature/V4L2/V4L2_Device.c)
+
+target_include_directories(ncl_v4l2 PUBLIC
+    feature/V4L2
+)
+
+target_link_libraries(ncl_v4l2 PUBLIC ncl_osal)
+
+if(MSVC)
+    target_compile_options(ncl_v4l2 PRIVATE /W4)
+else()
+    target_compile_options(ncl_v4l2 PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
+add_executable(v4l2_capture_demo v4l2_capture_demo.c)
+target_link_libraries(v4l2_capture_demo PRIVATE ncl_v4l2)
+
 # Tests
 enable_testing()
 add_subdirectory(tests)
