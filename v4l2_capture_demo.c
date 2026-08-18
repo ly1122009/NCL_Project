@@ -8,9 +8,14 @@
 
 #define NCL_LOG_TAG2 "V4L2_DEMO"
 
-// Milestone 1: open a UVC webcam, negotiate a format, capture exactly one
-// frame with MMAP buffers, and dump it to disk. No threading, no zero-copy
-// yet — just proving the core V4L2 ioctl sequence works end to end.
+// Most UVC webcams haven't converged auto-exposure/auto-white-balance on
+// the very first frame after STREAMON — it commonly comes back black or
+// badly exposed. Discard this many frames before keeping one.
+#define NCL_V4L2_WARMUP_FRAMES 15
+
+// Milestone 1: open a UVC webcam, negotiate a format, capture a frame with
+// MMAP buffers, and dump it to disk. No threading, no zero-copy yet — just
+// proving the core V4L2 ioctl sequence works end to end.
 //
 // Usage: v4l2_capture_demo [/dev/videoN] [output.raw]
 // Viewing the result (raw YUYV, no container/header):
@@ -58,6 +63,21 @@ int main(int argc, char *argv[]) {
     LOGE(NCL_LOG_TAG2, "StreamOn failed: %d", ret);
     goto CLOSE;
   }
+
+  for (int warmup = 0; warmup < NCL_V4L2_WARMUP_FRAMES; warmup++) {
+    ret = NCL_V4L2_DequeueBuffer(device, &index, &data, &bytesUsed);
+    if (ret != NCL_ErrorNone) {
+      LOGE(NCL_LOG_TAG2, "Warm-up DequeueBuffer(%d) failed: %d", warmup, ret);
+      goto STREAM_OFF;
+    }
+    ret = NCL_V4L2_QueueBuffer(device, index);
+    if (ret != NCL_ErrorNone) {
+      LOGE(NCL_LOG_TAG2, "Warm-up QueueBuffer(%d) failed: %d", warmup, ret);
+      goto STREAM_OFF;
+    }
+  }
+  LOGI(NCL_LOG_TAG2, "Discarded %d warm-up frame(s), capturing the keeper",
+       NCL_V4L2_WARMUP_FRAMES);
 
   ret = NCL_V4L2_DequeueBuffer(device, &index, &data, &bytesUsed);
   if (ret != NCL_ErrorNone) {
