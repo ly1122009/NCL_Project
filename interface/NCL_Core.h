@@ -30,8 +30,6 @@ typedef enum _NCL_ERRORTYPE
 } NCL_ERRORTYPE;
 
 
-
-
 #ifdef __cplusplus
 }
 #endif
