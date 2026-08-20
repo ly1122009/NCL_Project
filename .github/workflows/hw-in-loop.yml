@@ -1,0 +1,36 @@
+name: HW-in-loop (Raspberry Pi 4)
+
+# Runs on the real device via a self-hosted runner (see docs/WORKFLOW.md for
+# setup). Only triggered on PRs into main (release-readiness gate) or manually,
+# so day-to-day feature/* -> develop PRs never contend with local work on the
+# single physical Pi.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: hw-in-loop-raspi4
+  cancel-in-progress: false
+
+jobs:
+  native-build-test:
+    name: Native build & test on Raspberry Pi 4
+    runs-on: [self-hosted, raspi4, linux, arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake --preset gcc-dev-Debug
+
+      - name: Build
+        run: cmake --build --preset gcc-dev-Debug
+
+      - name: Test (native ARM64, real hardware)
+        run: ctest --preset test-gcc-dev-Debug
+
+      - name: Webcam presence sanity check
+        run: |
+          # TODO(feat/v4l2-capture): replace with a real V4L2 open/QUERYCAP
+          # and/or GStreamer pipeline smoke test once capture code lands.
+          ls /dev/video* 2>/dev/null || echo "::warning::No /dev/video* device found — webcam not connected?"
