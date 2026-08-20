@@ -62,8 +62,8 @@ Checks: '
 
 WarningsAsErrors: ''
 
-# Only lint headers inside the project (adjust to your include path pattern)
-HeaderFilterRegex: '(src|include|lib)/.*\.(h|H)$'
+# Only lint headers inside the project
+HeaderFilterRegex: '(feature|interface)/.*\.(h|H)$'
 
 AnalyzeTemporaryDtors: false
 
@@ -122,4 +122,3 @@ CheckOptions:
   # Allow use of unsigned types in loops (common in embedded)
   - key: cert-int09-c.AllowIntegerTypes
     value: 'true'
-...

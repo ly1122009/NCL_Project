@@ -20,4 +20,5 @@ target_link_libraries(ncl_osal_tests PRIVATE ncl_osal GTest::gtest_main)
 include(GoogleTest)
 gtest_discover_tests(ncl_osal_tests
     PROPERTIES TIMEOUT 10
+    DISCOVERY_MODE PRE_TEST
 )
