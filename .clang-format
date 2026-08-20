@@ -159,4 +159,3 @@ PenaltyReturnTypeOnItsOwnLine:           60
 DisableFormat:                  false
 ExperimentalAutoDetectBinPacking: false
 Cpp11BracedListStyle:           false   # Use C-style brace init: {0, 1, 2}
-...
