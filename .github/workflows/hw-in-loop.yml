@@ -16,7 +16,9 @@ concurrency:
 jobs:
   native-build-test:
     name: Native build & test on Raspberry Pi 4
-    runs-on: [self-hosted, raspi4, linux, arm64]
+    # Matches the runner's actual registered labels (default: self-hosted,
+    # Linux, ARM64 — no custom "raspi4" label was set at registration time).
+    runs-on: [self-hosted, linux, arm64]
     steps:
       - uses: actions/checkout@v4
 

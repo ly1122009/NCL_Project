@@ -68,9 +68,10 @@ than QEMU emulation would be.
 
 ### `hw-in-loop.yml` — PRs into `main` only, or manual
 
-Runs on a **self-hosted runner registered on the Pi itself** (label
-`[self-hosted, raspi4, linux, arm64]`). It builds and runs `ctest` natively
-on ARM64, then does a webcam presence sanity check.
+Runs on a **self-hosted runner registered on the Pi itself** (default labels
+`self-hosted, Linux, ARM64` — no custom label was set at registration time,
+so `runs-on` matches on those). It builds and runs `ctest` natively on
+ARM64, then does a webcam presence sanity check.
 
 **Why gated to `main` only, not every `feature/* → develop` PR:** there is
 one physical Pi, sometimes in active manual use (flashing, debugging,
@@ -90,11 +91,32 @@ there's no V4L2 code merged into `main`/`develop` yet to actually exercise.
 Once capture code lands, replace that step with a real
 open/`VIDIOC_QUERYCAP`/capture-N-frames smoke test.
 
-### Self-hosted runner setup (one-time, on the Pi)
+### Self-hosted runner — already installed
 
-Run over SSH (Tailscale or otherwise):
+Already set up and running as a systemd service on `ncl-buildserver`
+(`~/actions-runner`, runner name `ncl-buildserver`, registered against this
+repo, GitHub Actions runner v2.336.0). `ninja-build` was missing and has been
+installed (`sudo apt-get install -y ninja-build`) — everything else
+(`git`, `cmake`, `gcc`/`g++`, `ctest`, `v4l2-ctl`) was already present.
+
+Useful commands, run over SSH (Tailscale or otherwise):
 
 ```bash
+# check it's up
+systemctl status actions.runner.ly1122009-NCL_Project.ncl-buildserver.service
+journalctl -u actions.runner.ly1122009-NCL_Project.ncl-buildserver.service -n 30
+
+# restart it
+sudo systemctl restart actions.runner.ly1122009-NCL_Project.ncl-buildserver.service
+```
+
+If it ever needs to be re-registered from scratch (new repo, moved to a new
+device, token expired mid-setup):
+
+```bash
+cd ~/actions-runner
+./config.sh remove --token <REMOVAL_TOKEN>   # get from repo Settings -> Actions -> Runners
+# ... then redo the steps below
 mkdir actions-runner && cd actions-runner
 curl -o actions-runner-linux-arm64.tar.gz -L \
   https://github.com/actions/runner/releases/latest/download/actions-runner-linux-arm64-<VERSION>.tar.gz
@@ -102,8 +124,7 @@ tar xzf actions-runner-linux-arm64.tar.gz
 
 # Token: GitHub repo -> Settings -> Actions -> Runners -> New self-hosted runner
 # (short-lived, generate it fresh from the UI, don't hardcode it anywhere)
-./config.sh --url https://github.com/ly1122009/NCL_Project --token <TOKEN> \
-  --labels raspi4,linux,arm64 --name raspi4-runner
+./config.sh --url https://github.com/ly1122009/NCL_Project --token <TOKEN>
 
 sudo ./svc.sh install
 sudo ./svc.sh start
@@ -113,7 +134,7 @@ sudo ./svc.sh start
 comes back after power loss, without needing a login shell kept open.
 Tailscale isn't required for the runner itself — it only makes outbound
 connections to github.com — but it's what you'd use to reach the Pi to
-install/manage it.
+manage it.
 
 ## Lint debt
 
