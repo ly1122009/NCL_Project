@@ -39,7 +39,9 @@ else()
 endif()
 
 # Executable
-add_executable(ncl_app main.c)
+add_executable(ncl_app main.c 
+                v4l2_demo.c)
+                
 target_link_libraries(ncl_app PRIVATE ncl_osal)
 
 # Tests
