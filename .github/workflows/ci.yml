@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # NOTE: the existing codebase predates a working .clang-format/.clang-tidy
+  # (both configs had a trailing YAML `...` marker that made clang-format 14
+  # refuse to parse them at all, so neither tool had ever actually run here).
+  # With that fixed, a full-repo pass surfaces a lot of pre-existing
+  # formatting drift and a readability-identifier-naming convention
+  # (snake_case) that doesn't match the project's established OMX-style
+  # camelCase API. Failing the build on that now would make every PR red for
+  # reasons unrelated to its own diff. So: report, don't block, until a
+  # deliberate baseline-reformat + naming-convention decision is made -
+  # see docs/WORKFLOW.md "Lint debt" section. Flip continue-on-error to
+  # false once that's done.
+  lint:
+    name: Lint (clang-format + clang-tidy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tooling
+        run: sudo apt-get update && sudo apt-get install -y clang-format clang-tidy cmake ninja-build
+
+      - name: clang-format check
+        continue-on-error: true
+        run: |
+          files=$(find feature interface tests -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' \))
+          files="$files main.c"
+          clang-format --dry-run --Werror $files
+
+      - name: Configure (generate compile_commands.json)
+        run: cmake --preset gcc-dev-Debug
+
+      - name: clang-tidy (C sources only)
+        continue-on-error: true
+        run: |
+          c_files=$(find feature -type f -name '*.c')
+          clang-tidy -p build/gcc-dev-Debug $c_files main.c
+
+  build-test:
+    name: Build & Test (${{ matrix.preset }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [gcc-dev-Debug, gcc-dev-Release, gcc-dev-ASan]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tooling
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: ctest --preset test-${{ matrix.preset }}
+
+  cross-compile-arm64:
+    name: Cross-compile (ARM64 / Raspberry Pi OS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install cross toolchain
+        run: sudo apt-get update && sudo apt-get install -y cmake ninja-build gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+
+      - name: Configure
+        run: cmake --preset arm64-cross-Release
+
+      - name: Build
+        run: cmake --build --preset arm64-cross-Release
