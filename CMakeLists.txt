@@ -22,6 +22,10 @@ set(NCL_OSAL_SOURCES
     feature/OSAL/OSAL_Semaphore.c
 )
 
+set(NCL_V4L2_SOURCES
+    feature/V4L2/V4L2_Capture.c
+)
+
 add_library(ncl_osal STATIC ${NCL_OSAL_SOURCES})
 
 target_include_directories(ncl_osal PUBLIC
@@ -40,7 +44,9 @@ endif()
 
 # Executable
 add_executable(ncl_app main.c
-                v4l2_demo.c)
+                v4l2_demo.c
+                ${NCL_V4L2_SOURCES})
+target_include_directories(ncl_app PRIVATE feature/V4L2)
 target_link_libraries(ncl_app PRIVATE ncl_osal)
 
 # Tests
