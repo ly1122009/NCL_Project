@@ -4,10 +4,30 @@
 #include "NCL_Core.h"
 #include "NCL_Types.h"
 #include <linux/videodev2.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * Test seam: every NCL_V4L2_Capture* call goes through this table instead
+ * of calling open/ioctl/mmap/munmap/close directly, so unit tests can swap
+ * in a fake V4L2 device and run without real hardware. Production code
+ * never touches this -- it's wired to the real syscalls by default.
+ */
+typedef struct _NCL_V4L2_SYSCALLS {
+  int (*open)(const char *pathname, int flags);
+  int (*ioctl)(int fd, unsigned long request, void *arg);
+  void *(*mmap)(void *addr, size_t length, int prot, int flags, int fd,
+                off_t offset);
+  int (*munmap)(void *addr, size_t length);
+  int (*close)(int fd);
+} NCL_V4L2_SYSCALLS;
+
+/** Pass NULL to restore the real syscalls. Test-only -- don't call from
+ * production code. */
+void NCL_V4L2_SetSyscalls(const NCL_V4L2_SYSCALLS *syscalls);
 
 typedef struct _NCL_V4L2_CAPTURE {
     int m_fd;

@@ -42,12 +42,24 @@ else()
     target_compile_options(ncl_osal PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+add_library(ncl_v4l2 STATIC ${NCL_V4L2_SOURCES})
+
+target_include_directories(ncl_v4l2 PUBLIC
+    feature/V4L2
+)
+
+target_link_libraries(ncl_v4l2 PUBLIC ncl_osal)
+
+if(MSVC)
+    target_compile_options(ncl_v4l2 PRIVATE /W4)
+else()
+    target_compile_options(ncl_v4l2 PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 # Executable
 add_executable(ncl_app main.c
-                v4l2_demo.c
-                ${NCL_V4L2_SOURCES})
-target_include_directories(ncl_app PRIVATE feature/V4L2)
-target_link_libraries(ncl_app PRIVATE ncl_osal)
+                v4l2_demo.c)
+target_link_libraries(ncl_app PRIVATE ncl_osal ncl_v4l2)
 
 # Tests
 enable_testing()

@@ -13,9 +13,10 @@ add_executable(ncl_osal_tests
     test_osal_event.cpp
     test_osal_mutex.cpp
     test_osal_thread.cpp
+    test_v4l2_capture.cpp
 )
 
-target_link_libraries(ncl_osal_tests PRIVATE ncl_osal GTest::gtest_main)
+target_link_libraries(ncl_osal_tests PRIVATE ncl_osal ncl_v4l2 GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(ncl_osal_tests
