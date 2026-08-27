@@ -22,6 +22,10 @@ set(NCL_OSAL_SOURCES
     feature/OSAL/OSAL_Semaphore.c
 )
 
+set(NCL_V4L2_SOURCES
+    feature/V4L2/V4L2_Capture.c
+)
+
 add_library(ncl_osal STATIC ${NCL_OSAL_SOURCES})
 
 target_include_directories(ncl_osal PUBLIC
@@ -38,9 +42,24 @@ else()
     target_compile_options(ncl_osal PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+add_library(ncl_v4l2 STATIC ${NCL_V4L2_SOURCES})
+
+target_include_directories(ncl_v4l2 PUBLIC
+    feature/V4L2
+)
+
+target_link_libraries(ncl_v4l2 PUBLIC ncl_osal)
+
+if(MSVC)
+    target_compile_options(ncl_v4l2 PRIVATE /W4)
+else()
+    target_compile_options(ncl_v4l2 PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 # Executable
-add_executable(ncl_app main.c)
-target_link_libraries(ncl_app PRIVATE ncl_osal)
+add_executable(ncl_app main.c
+                v4l2_demo.c)
+target_link_libraries(ncl_app PRIVATE ncl_osal ncl_v4l2)
 
 # Tests
 enable_testing()
