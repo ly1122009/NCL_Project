@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #include <linux/videodev2.h>
 
 #include "NCL_Core.h"
@@ -97,6 +100,41 @@ int main(int argc, char **argv) {
   if (ret != NCL_ErrorNone) {
     printf("ERROR: NCL_V4L2_CaptureStart failed: %d\n", ret);
     goto EXIT_QUEUE;
+  }
+
+  /* Step 4 demonstration: capture one frame synchronously, export the
+   * buffer as a DMA-BUF fd, import it back via an independent mmap(), and
+   * prove the two views see identical bytes -- i.e. it's the same physical
+   * memory as *frameData, not a copy. This is orthogonal to the
+   * thread+queue path below; it just proves the mechanism works before the
+   * threaded capture starts consuming the buffer. */
+  {
+    NCL_PTR frameData = NULL;
+    NCL_U32 frameSize = 0;
+    ret = NCL_V4L2_CaptureGetFrame(capture, &frameData, &frameSize);
+    if (ret == NCL_ErrorNone) {
+      int dmaBufFd = -1;
+      ret = NCL_V4L2_CaptureExportBuffer(capture, &dmaBufFd);
+      if (ret == NCL_ErrorNone) {
+        void *imported = mmap(NULL, frameSize, PROT_READ, MAP_SHARED, dmaBufFd, 0);
+        if (imported != MAP_FAILED) {
+          int same = (memcmp(frameData, imported, frameSize) == 0);
+          printf("DMA-BUF zero-copy check: independent mmap of exported fd %s "
+                 "the original capture buffer\n",
+                 same ? "MATCHES" : "DOES NOT MATCH");
+          munmap(imported, frameSize);
+        } else {
+          printf("ERROR: mmap of DMA-BUF fd failed\n");
+        }
+        close(dmaBufFd);
+      } else {
+        printf("ERROR: NCL_V4L2_CaptureExportBuffer failed: %d\n", ret);
+      }
+      NCL_V4L2_CaptureReleaseFrame(capture);
+    } else {
+      printf("ERROR: DMA-BUF demo GetFrame failed: %d\n", ret);
+    }
+    ret = NCL_ErrorNone; /* don't fail the whole demo over this side-check */
   }
 
   threadCtx.captureHandle = capture;

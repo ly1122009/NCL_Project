@@ -86,6 +86,11 @@ extern "C" int fake_ioctl(int fd, unsigned long request, void *arg) {
       }
       return 0;
     }
+    case VIDIOC_EXPBUF: {
+      auto *exp = static_cast<struct v4l2_exportbuffer *>(arg);
+      exp->fd = 99;  // arbitrary fake DMA-BUF fd for the test to assert on
+      return 0;
+    }
     case VIDIOC_STREAMOFF:
       g_state.streamOnCount--;
       return 0;
@@ -193,6 +198,32 @@ TEST_F(V4L2CaptureTest, CreateFailsWhenOpenFails) {
                                    V4L2_PIX_FMT_YUYV),
             NCL_ErrorHardware);
   EXPECT_EQ(capture, nullptr);
+}
+
+TEST_F(V4L2CaptureTest, ExportBufferReturnsDmaBufFd) {
+  NCL_HANDLETYPE capture = nullptr;
+  ASSERT_EQ(NCL_V4L2_CaptureCreate(&capture, "/dev/video0", 640, 480,
+                                   V4L2_PIX_FMT_YUYV),
+            NCL_ErrorNone);
+
+  int dmaBufFd = -1;
+  ASSERT_EQ(NCL_V4L2_CaptureExportBuffer(capture, &dmaBufFd), NCL_ErrorNone);
+  EXPECT_EQ(dmaBufFd, 99);
+
+  NCL_V4L2_CaptureTerminate(capture);
+}
+
+TEST_F(V4L2CaptureTest, ExportBufferRejectsNullArgs) {
+  EXPECT_EQ(NCL_V4L2_CaptureExportBuffer(nullptr, nullptr),
+            NCL_ErrorBadParameter);
+
+  NCL_HANDLETYPE capture = nullptr;
+  ASSERT_EQ(NCL_V4L2_CaptureCreate(&capture, "/dev/video0", 640, 480,
+                                   V4L2_PIX_FMT_YUYV),
+            NCL_ErrorNone);
+  EXPECT_EQ(NCL_V4L2_CaptureExportBuffer(capture, nullptr),
+            NCL_ErrorBadParameter);
+  NCL_V4L2_CaptureTerminate(capture);
 }
 
 TEST_F(V4L2CaptureTest, CreateFailsWhenDeviceLacksCaptureCapability) {

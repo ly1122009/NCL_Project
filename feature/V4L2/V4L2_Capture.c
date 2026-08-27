@@ -245,6 +245,38 @@ EXIT:
   return ret;
 }
 
+NCL_ERRORTYPE NCL_V4L2_CaptureExportBuffer(NCL_HANDLETYPE captureHandle,
+                                           int *dmaBufFd) {
+  NCL_ERRORTYPE ret = NCL_ErrorNone;
+  NCL_V4L2_CAPTURE *capture = (NCL_V4L2_CAPTURE *)captureHandle;
+  struct v4l2_exportbuffer expbuf;
+  int ioctlRet = 0;
+
+  if (!capture || !dmaBufFd) {
+    ret = NCL_ErrorBadParameter;
+    goto EXIT;
+  }
+
+  memset(&expbuf, 0, sizeof(expbuf));
+  expbuf.type = capture->m_buf.type;
+  expbuf.index = capture->m_buf.index;
+  expbuf.flags = O_RDONLY;
+
+  ioctlRet = s_syscalls->ioctl(capture->m_fd, VIDIOC_EXPBUF, &expbuf);
+  if (ioctlRet) {
+    ret = NCL_ErrorHardware;
+    LOGE(NCL_LOG_TAG2, "[NCL_V4L2_CaptureExportBuffer] - VIDIOC_EXPBUF failed: %s",
+         strerror(errno));
+    goto EXIT;
+  }
+
+  *dmaBufFd = expbuf.fd;
+
+EXIT:
+  LOGI(NCL_LOG_TAG2, "[NCL_V4L2_CaptureExportBuffer] - ret %d", ret);
+  return ret;
+}
+
 NCL_ERRORTYPE NCL_V4L2_CaptureStop(NCL_HANDLETYPE captureHandle) {
   NCL_ERRORTYPE ret = NCL_ErrorNone;
   NCL_V4L2_CAPTURE *capture = (NCL_V4L2_CAPTURE *)captureHandle;

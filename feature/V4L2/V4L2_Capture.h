@@ -76,6 +76,18 @@ NCL_ERRORTYPE NCL_V4L2_CaptureGetFrame(NCL_HANDLETYPE captureHandle,
  */
 NCL_ERRORTYPE NCL_V4L2_CaptureReleaseFrame(NCL_HANDLETYPE captureHandle);
 
+/**
+ * VIDIOC_EXPBUF -- exports the capture buffer as a DMA-BUF file descriptor
+ * that a different driver/subsystem (another V4L2 device via
+ * V4L2_MEMORY_DMABUF, DRM/KMS, EGL, ...) can import and access with zero
+ * copy -- it's the same physical memory as *frameData from GetFrame, just
+ * reachable through a kernel-standard fd instead of this process's mmap.
+ * The caller owns *dmaBufFd and must close() it themselves once done;
+ * NCL_V4L2_CaptureTerminate doesn't touch it.
+ */
+NCL_ERRORTYPE NCL_V4L2_CaptureExportBuffer(NCL_HANDLETYPE captureHandle,
+                                           NCL_OUT int *dmaBufFd);
+
 /** VIDIOC_STREAMOFF. */
 NCL_ERRORTYPE NCL_V4L2_CaptureStop(NCL_HANDLETYPE captureHandle);
 
