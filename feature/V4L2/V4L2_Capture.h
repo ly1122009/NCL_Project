@@ -37,15 +37,24 @@ NCL_ERRORTYPE NCL_V4L2_CaptureStart(NCL_HANDLETYPE captureHandle);
 
 /**
  * VIDIOC_DQBUF (blocks until the driver has filled the buffer). Only one
- * buffer is in flight (single-buffer, single-shot capture, matching step 1
- * of the roadmap) -- call NCL_V4L2_CaptureStop right after reading the
- * frame, don't call GetFrame again without re-queuing first.
- * *frameData points directly into the mmap'd buffer (zero-copy) and stays
- * valid until NCL_V4L2_CaptureTerminate.
+ * buffer exists (single-buffer capture), so the driver has nowhere to write
+ * the next frame until that buffer is handed back -- call
+ * NCL_V4L2_CaptureReleaseFrame once done reading *frameData, before calling
+ * GetFrame again. *frameData points directly into the mmap'd buffer
+ * (zero-copy) and is only valid until the next ReleaseFrame call.
  */
 NCL_ERRORTYPE NCL_V4L2_CaptureGetFrame(NCL_HANDLETYPE captureHandle,
                                        NCL_OUT NCL_PTR *frameData,
                                        NCL_OUT NCL_U32 *frameSize);
+
+/**
+ * VIDIOC_QBUF -- hands the buffer from the last GetFrame back to the driver
+ * so it can capture the next frame into it. Must be called after every
+ * GetFrame before the next GetFrame (or before Stop, for a single-shot
+ * capture that skips it, that's fine too -- Stop doesn't need the buffer
+ * back).
+ */
+NCL_ERRORTYPE NCL_V4L2_CaptureReleaseFrame(NCL_HANDLETYPE captureHandle);
 
 /** VIDIOC_STREAMOFF. */
 NCL_ERRORTYPE NCL_V4L2_CaptureStop(NCL_HANDLETYPE captureHandle);

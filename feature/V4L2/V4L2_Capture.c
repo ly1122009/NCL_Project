@@ -207,6 +207,29 @@ EXIT:
   return ret;
 }
 
+NCL_ERRORTYPE NCL_V4L2_CaptureReleaseFrame(NCL_HANDLETYPE captureHandle) {
+  NCL_ERRORTYPE ret = NCL_ErrorNone;
+  NCL_V4L2_CAPTURE *capture = (NCL_V4L2_CAPTURE *)captureHandle;
+  int ioctlRet = 0;
+
+  if (!capture) {
+    ret = NCL_ErrorBadParameter;
+    goto EXIT;
+  }
+
+  ioctlRet = ioctl(capture->m_fd, VIDIOC_QBUF, &capture->m_buf);
+  if (ioctlRet) {
+    ret = NCL_ErrorHardware;
+    LOGE(NCL_LOG_TAG2, "[NCL_V4L2_CaptureReleaseFrame] - VIDIOC_QBUF failed: %s",
+         strerror(errno));
+    goto EXIT;
+  }
+
+EXIT:
+  LOGD(NCL_LOG_TAG2, "[NCL_V4L2_CaptureReleaseFrame] - ret %d", ret);
+  return ret;
+}
+
 NCL_ERRORTYPE NCL_V4L2_CaptureStop(NCL_HANDLETYPE captureHandle) {
   NCL_ERRORTYPE ret = NCL_ErrorNone;
   NCL_V4L2_CAPTURE *capture = (NCL_V4L2_CAPTURE *)captureHandle;
