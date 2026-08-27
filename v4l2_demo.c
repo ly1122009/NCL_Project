@@ -140,6 +140,22 @@ int main(int argc, char **argv) {
   threadCtx.running = NCL_FALSE;
   NCL_OSAL_ThreadTerminate(captureThread);
 
+  /* The thread may have already committed to one more GetFrame/Enqueue
+   * cycle before it saw running go false -- drain anything left so it
+   * doesn't leak (QueueTerminate only frees its own NCL_QElem nodes, not
+   * whatever payload they point to). */
+  {
+    NCL_PTR leftover = NULL;
+    while (NCL_OSAL_Dequeue(queue, &leftover) == NCL_ErrorNone && leftover) {
+      V4L2_FrameMsg *leftoverMsg = (V4L2_FrameMsg *)leftover;
+      LOGW(NCL_LOG_TAG2, "[main] - draining unconsumed frame (%u bytes)",
+           leftoverMsg->size);
+      NCL_OSAL_Free(leftoverMsg->data);
+      NCL_OSAL_Free(leftoverMsg);
+      leftover = NULL;
+    }
+  }
+
   printf("Done. Captured %d frames via thread+queue.\n", framesWritten);
 
 EXIT_STOP:
