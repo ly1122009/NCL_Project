@@ -12,6 +12,7 @@ find_package(Threads REQUIRED)
 
 set(NCL_OSAL_SOURCES
     feature/core/src/Math.c
+    feature/OSAL/OSAL_DmaBuf.c
     feature/OSAL/OSAL_Memory.c
     feature/OSAL/OSAL_Thread.c
     feature/OSAL/OSAL_Event.c

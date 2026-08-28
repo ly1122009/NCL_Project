@@ -9,6 +9,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 add_executable(ncl_osal_tests
+    test_osal_dmabuf.cpp
     test_osal_queue.cpp
     test_osal_event.cpp
     test_osal_mutex.cpp
